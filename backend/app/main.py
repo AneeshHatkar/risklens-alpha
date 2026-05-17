@@ -6,6 +6,7 @@ from backend.app.schemas import SimulationResult
 from backend.app.services.agent_debate import run_agent_debate
 from backend.app.services.factor_mapper import map_factors
 from backend.app.services.market_metrics import compute_market_metrics
+from backend.app.services.confidence_engine import calculate_confidence_interval
 from backend.app.services.portfolio_parser import normalize_portfolio
 from backend.app.services.risk_scoring import score_portfolio
 from backend.app.services.scenario_generator import SCENARIOS, get_scenario
@@ -88,6 +89,14 @@ def run_simulation(
         if holding.risk_score >= 20
     ][:3]
 
+    confidence_interval = calculate_confidence_interval(
+        score=score,
+        portfolio=portfolio,
+        exposures=exposures,
+        agent_opinions=agent_opinions,
+        market_metrics=market_metrics,
+    )
+
     summary = build_summary(
         score=score,
         risk_level=risk_level,
@@ -136,6 +145,18 @@ def print_result(result: SimulationResult) -> None:
     print("\n--- Portfolio Vulnerability ---")
     print(f"Score     : {result.vulnerability_score}/100")
     print(f"Risk Level: {result.risk_level.upper()}")
+
+    if result.confidence_interval:
+        interval = result.confidence_interval
+        print("\n--- Confidence Interval ---")
+        print(f"Range      : {interval['lower']}–{interval['upper']}")
+        print(f"Confidence : {interval['confidence']} ({interval['label']})")
+
+    if result.confidence_interval:
+        interval = result.confidence_interval
+        print("\n--- Confidence Interval ---")
+        print(f"Range      : {interval['lower']}–{interval['upper']}")
+        print(f"Confidence : {interval['confidence']} ({interval['label']})")
 
     if result.market_metrics:
         portfolio_metrics = result.market_metrics["portfolio_metrics"]

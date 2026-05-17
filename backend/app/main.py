@@ -118,6 +118,7 @@ def run_simulation(
         summary=summary,
         disclaimer=DISCLAIMER,
         market_metrics=market_metrics,
+        confidence_interval=confidence_interval,
     )
 
 
@@ -145,12 +146,6 @@ def print_result(result: SimulationResult) -> None:
     print("\n--- Portfolio Vulnerability ---")
     print(f"Score     : {result.vulnerability_score}/100")
     print(f"Risk Level: {result.risk_level.upper()}")
-
-    if result.confidence_interval:
-        interval = result.confidence_interval
-        print("\n--- Confidence Interval ---")
-        print(f"Range      : {interval['lower']}–{interval['upper']}")
-        print(f"Confidence : {interval['confidence']} ({interval['label']})")
 
     if result.confidence_interval:
         interval = result.confidence_interval

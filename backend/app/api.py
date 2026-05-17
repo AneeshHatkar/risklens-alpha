@@ -6,7 +6,10 @@ from backend.app.main import (
     run_simulation,
     save_result_json,
 )
-from backend.app.schemas import SimulationRequest, SimulationResult
+from backend.app.services.market_metrics import compute_market_metrics
+from backend.app.services.portfolio_parser import normalize_portfolio
+from backend.app.services.scenario_comparison import compare_scenarios
+from backend.app.schemas import ScenarioComparisonRequest, SimulationRequest, SimulationResult
 from backend.app.services.scenario_generator import SCENARIOS
 
 
@@ -68,6 +71,36 @@ def simulate(request: SimulationRequest) -> SimulationResult:
             save_result_json(result, output_path)
 
         return result
+
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.post("/simulate/compare")
+def compare_simulation_scenarios(request: ScenarioComparisonRequest) -> list[dict]:
+    try:
+        raw_portfolios = load_all_sample_portfolios()
+
+        if request.portfolio_id not in raw_portfolios:
+            valid = ", ".join(raw_portfolios.keys())
+            raise ValueError(
+                f"Unknown portfolio_id '{request.portfolio_id}'. Valid options: {valid}"
+            )
+
+        portfolio = normalize_portfolio(raw_portfolios[request.portfolio_id])
+
+        market_metrics = None
+        if request.use_market_data:
+            market_metrics = compute_market_metrics(
+                portfolio=portfolio,
+                start="2024-01-01",
+                benchmark="SPY",
+            )
+
+        return compare_scenarios(
+            portfolio=portfolio,
+            market_metrics=market_metrics,
+        )
 
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error

@@ -11,6 +11,7 @@ from backend.app.services.confidence_engine import calculate_confidence_interval
 from backend.app.services.portfolio_parser import normalize_portfolio
 from backend.app.services.risk_scoring import score_portfolio
 from backend.app.services.scenario_generator import SCENARIOS, get_scenario
+from backend.app.services.scenario_comparison import compare_scenarios
 
 
 DISCLAIMER = (
@@ -129,6 +130,48 @@ def run_simulation(
     )
 
 
+
+
+def run_scenario_comparison(
+    portfolio_id: str = "ai_growth_sample",
+    use_market_data: bool = False,
+) -> list[dict]:
+    raw_portfolio = load_sample_portfolio(portfolio_id)
+    portfolio = normalize_portfolio(raw_portfolio)
+
+    market_metrics = None
+    if use_market_data:
+        market_metrics = compute_market_metrics(
+            portfolio=portfolio,
+            start="2024-01-01",
+            benchmark="SPY",
+        )
+
+    return compare_scenarios(
+        portfolio=portfolio,
+        market_metrics=market_metrics,
+    )
+
+
+def print_scenario_comparison(portfolio_id: str, results: list[dict]) -> None:
+    print("\n" + "=" * 72)
+    print("RiskLens Alpha Scenario Comparison")
+    print("=" * 72)
+    print(f"\nPortfolio ID: {portfolio_id}")
+
+    for index, item in enumerate(results, start=1):
+        holdings = ", ".join(item["most_vulnerable_holdings"]) or "none"
+        factors = ", ".join(item["dominant_factors"][:3]) or "limited mapped factors"
+
+        print(
+            f"\n{index}. {item['scenario_name']} "
+            f"— {item['vulnerability_score']}/100 ({item['risk_level'].upper()})"
+        )
+        print(f"   Top factors : {factors}")
+        print(f"   Holdings    : {holdings}")
+
+    print("=" * 72 + "\n")
+
 def save_result_json(result: SimulationResult, output_path: str) -> Path:
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -243,6 +286,11 @@ def parse_args() -> argparse.Namespace:
         help="Include live market metrics from yfinance in the simulation result.",
     )
     parser.add_argument(
+        "--compare-scenarios",
+        action="store_true",
+        help="Run the selected portfolio against every predefined scenario.",
+    )
+    parser.add_argument(
         "--output",
         default="reports/json/latest_simulation.json",
         help="Output path for JSON result when --save-json is used.",
@@ -256,6 +304,19 @@ if __name__ == "__main__":
 
     if args.list:
         print_available_options()
+    elif args.compare_scenarios:
+        comparison_results = run_scenario_comparison(
+            portfolio_id=args.portfolio,
+            use_market_data=args.use_market_data,
+        )
+        print_scenario_comparison(args.portfolio, comparison_results)
+
+        if args.save_json:
+            saved_path = Path(args.output)
+            saved_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(saved_path, "w", encoding="utf-8") as file:
+                json.dump(comparison_results, file, indent=2)
+            print(f"Saved scenario comparison JSON to: {saved_path}")
     else:
         simulation_result = run_simulation(
             portfolio_id=args.portfolio,

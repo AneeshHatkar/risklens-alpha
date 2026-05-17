@@ -68,3 +68,9 @@ class SimulationRequest(BaseModel):
     scenario_id: str = "ai_capex_slowdown"
     save_json: bool = False
     use_market_data: bool = False
+
+
+
+class ScenarioComparisonRequest(BaseModel):
+    portfolio_id: str = "ai_growth_sample"
+    use_market_data: bool = False

@@ -82,3 +82,20 @@ def test_simulate_endpoint_accepts_use_market_data_flag_without_forcing_it():
 
     assert "market_metrics" in data
     assert data["market_metrics"] is None
+
+
+def test_compare_scenarios_endpoint_returns_ranked_results():
+    response = client.post(
+        "/simulate/compare",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "use_market_data": False,
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert len(data) >= 5
+    assert data[0]["vulnerability_score"] >= data[-1]["vulnerability_score"]
+    assert "scenario_name" in data[0]

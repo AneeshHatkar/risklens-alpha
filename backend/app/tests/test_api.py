@@ -64,3 +64,21 @@ def test_simulate_endpoint_rejects_bad_scenario():
 
     assert response.status_code == 400
     assert "Unknown scenario_id" in response.json()["detail"]
+
+
+def test_simulate_endpoint_accepts_use_market_data_flag_without_forcing_it():
+    response = client.post(
+        "/simulate",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "scenario_id": "ai_capex_slowdown",
+            "save_json": False,
+            "use_market_data": False,
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "market_metrics" in data
+    assert data["market_metrics"] is None

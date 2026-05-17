@@ -11,3 +11,4 @@ pytest
 jinja2
 matplotlib
 httpx
+yfinance

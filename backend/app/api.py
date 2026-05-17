@@ -58,6 +58,7 @@ def simulate(request: SimulationRequest) -> SimulationResult:
         result = run_simulation(
             portfolio_id=request.portfolio_id,
             scenario_id=request.scenario_id,
+            use_market_data=request.use_market_data,
         )
 
         if request.save_json:

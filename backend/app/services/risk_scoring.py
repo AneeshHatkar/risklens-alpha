@@ -12,6 +12,12 @@ def clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
     return max(low, min(high, value))
 
 
+def normalize_range(value: float, low: float, high: float) -> float:
+    if high <= low:
+        return 0.0
+    return clamp((value - low) / (high - low))
+
+
 def risk_level_from_score(score: int) -> str:
     if score <= 30:
         return "low"
@@ -33,8 +39,6 @@ def holding_risk_level(score: int) -> str:
 
 
 def compute_concentration_risk(portfolio: Portfolio) -> float:
-    # Herfindahl-Hirschman style concentration.
-    # Equal 4-stock portfolio = 0.25. Concentrated portfolio gets closer to 1.
     hhi = sum(h.weight**2 for h in portfolio.holdings)
     return clamp(hhi / 0.50)
 
@@ -72,8 +76,16 @@ def compute_narrative_alignment_score(
     return clamp(0.65 * avg_confidence + 0.35 * coverage)
 
 
-def compute_correlation_risk(portfolio: Portfolio, exposures: list[FactorExposure]) -> float:
-    # MVP proxy: holdings sharing the same high-level factors are treated as hidden correlation.
+def compute_correlation_risk(
+    portfolio: Portfolio,
+    exposures: list[FactorExposure],
+    market_metrics: dict | None = None,
+) -> float:
+    if market_metrics:
+        corr = market_metrics.get("portfolio_metrics", {}).get("average_pairwise_correlation")
+        if corr is not None:
+            return normalize_range(abs(float(corr)), 0.10, 0.85)
+
     factor_to_weight = defaultdict(float)
 
     for holding in portfolio.holdings:
@@ -84,13 +96,20 @@ def compute_correlation_risk(portfolio: Portfolio, exposures: list[FactorExposur
     if not factor_to_weight:
         return 0.0
 
-    top_shared_exposure = max(factor_to_weight.values())
-    return clamp(top_shared_exposure)
+    return clamp(max(factor_to_weight.values()))
 
 
-def compute_volatility_risk(portfolio: Portfolio, exposures: list[FactorExposure]) -> float:
-    # MVP proxy until live market data is added.
-    # High market beta and semiconductor/growth exposure increase volatility proxy.
+def compute_volatility_risk(
+    portfolio: Portfolio,
+    exposures: list[FactorExposure],
+    market_metrics: dict | None = None,
+) -> float:
+    if market_metrics:
+        vol = market_metrics.get("portfolio_metrics", {}).get("portfolio_volatility")
+        if vol is not None:
+            # 10% annualized volatility is low, 45%+ is high for an equity portfolio.
+            return normalize_range(float(vol), 0.10, 0.45)
+
     weights = {h.ticker: h.weight for h in portfolio.holdings}
     vol_factors = {"market beta", "semiconductors", "growth stocks", "valuation multiples"}
 
@@ -137,8 +156,11 @@ def compute_holding_risks(
     portfolio: Portfolio,
     exposures: list[FactorExposure],
     scenario: ShockScenario,
+    market_metrics: dict | None = None,
 ) -> list[HoldingRisk]:
     affected = set(scenario.affected_factors)
+    asset_metrics = market_metrics.get("asset_metrics", {}) if market_metrics else {}
+
     holding_results: list[HoldingRisk] = []
 
     for holding in portfolio.holdings:
@@ -147,15 +169,37 @@ def compute_holding_risks(
             if e.ticker == holding.ticker and e.factor in affected
         ]
 
-        raw_score = sum(e.score * e.confidence for e in relevant)
-        normalized = clamp(raw_score / max(1, len(affected)))
-        weighted_score = clamp(0.65 * normalized + 0.35 * holding.weight)
+        factor_score = sum(e.score * e.confidence for e in relevant)
+        factor_score = clamp(factor_score / max(1, len(affected)))
+
+        market_score = 0.0
+        ticker_metrics = asset_metrics.get(holding.ticker)
+
+        if ticker_metrics and ticker_metrics.get("available"):
+            beta_score = normalize_range(abs(float(ticker_metrics.get("beta", 0.0))), 0.50, 2.00)
+            vol_score = normalize_range(float(ticker_metrics.get("volatility", 0.0)), 0.10, 0.60)
+            drawdown_score = normalize_range(abs(float(ticker_metrics.get("max_drawdown", 0.0))), 0.05, 0.45)
+            market_score = clamp(0.35 * beta_score + 0.35 * vol_score + 0.30 * drawdown_score)
+
+        weighted_score = clamp(
+            0.55 * factor_score
+            + 0.25 * market_score
+            + 0.20 * holding.weight
+        )
+
         final_score = round(weighted_score * scenario.severity * 100)
 
         reasons = []
+
         for exposure in sorted(relevant, key=lambda e: e.score, reverse=True)[:3]:
             reasons.append(
                 f"{holding.ticker} is mapped to {exposure.factor} with exposure {exposure.score:.2f}."
+            )
+
+        if ticker_metrics and ticker_metrics.get("available"):
+            reasons.append(
+                f"Market metrics: beta {ticker_metrics['beta']}, volatility {ticker_metrics['volatility']}, "
+                f"max drawdown {ticker_metrics['max_drawdown']}."
             )
 
         if not reasons:
@@ -178,11 +222,12 @@ def score_portfolio(
     scenario: ShockScenario,
     exposures: list[FactorExposure],
     agent_opinions: list[AgentOpinion],
+    market_metrics: dict | None = None,
 ) -> tuple[int, str, dict[str, float], list[HoldingRisk]]:
     concentration = compute_concentration_risk(portfolio)
     factor_exposure = compute_factor_exposure_score(portfolio, exposures, scenario)
-    correlation = compute_correlation_risk(portfolio, exposures)
-    volatility = compute_volatility_risk(portfolio, exposures)
+    correlation = compute_correlation_risk(portfolio, exposures, market_metrics)
+    volatility = compute_volatility_risk(portfolio, exposures, market_metrics)
     narrative_alignment = compute_narrative_alignment_score(exposures, scenario)
     agent_consensus = compute_agent_consensus(agent_opinions)
 
@@ -198,6 +243,6 @@ def score_portfolio(
     score = round(100 * clamp(raw_score))
     level = risk_level_from_score(score)
     contributions = compute_factor_contributions(portfolio, exposures, scenario)
-    holding_risks = compute_holding_risks(portfolio, exposures, scenario)
+    holding_risks = compute_holding_risks(portfolio, exposures, scenario, market_metrics)
 
     return score, level, contributions, holding_risks

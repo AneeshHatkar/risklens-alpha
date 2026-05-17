@@ -58,9 +58,11 @@ class SimulationResult(BaseModel):
     agent_opinions: List[AgentOpinion]
     summary: str
     disclaimer: str
+    market_metrics: Optional[Dict] = None
 
 
 class SimulationRequest(BaseModel):
     portfolio_id: str = "ai_growth_sample"
     scenario_id: str = "ai_capex_slowdown"
     save_json: bool = False
+    use_market_data: bool = False

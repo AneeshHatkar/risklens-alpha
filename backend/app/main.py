@@ -5,6 +5,7 @@ from pathlib import Path
 from backend.app.schemas import SimulationResult
 from backend.app.services.agent_debate import run_agent_debate
 from backend.app.services.factor_mapper import map_factors
+from backend.app.services.market_metrics import compute_market_metrics
 from backend.app.services.portfolio_parser import normalize_portfolio
 from backend.app.services.risk_scoring import score_portfolio
 from backend.app.services.scenario_generator import SCENARIOS, get_scenario
@@ -55,10 +56,19 @@ def build_summary(
 def run_simulation(
     portfolio_id: str = "ai_growth_sample",
     scenario_id: str = "ai_capex_slowdown",
+    use_market_data: bool = False,
 ) -> SimulationResult:
     raw_portfolio = load_sample_portfolio(portfolio_id)
     portfolio = normalize_portfolio(raw_portfolio)
     scenario = get_scenario(scenario_id)
+
+    market_metrics = None
+    if use_market_data:
+        market_metrics = compute_market_metrics(
+            portfolio=portfolio,
+            start="2024-01-01",
+            benchmark="SPY",
+        )
 
     exposures = map_factors(portfolio, scenario)
     agent_opinions = run_agent_debate(portfolio, scenario, exposures)
@@ -68,6 +78,7 @@ def run_simulation(
         scenario=scenario,
         exposures=exposures,
         agent_opinions=agent_opinions,
+        market_metrics=market_metrics,
     )
 
     dominant_factors = list(factor_contributions.keys())
@@ -97,6 +108,7 @@ def run_simulation(
         agent_opinions=agent_opinions,
         summary=summary,
         disclaimer=DISCLAIMER,
+        market_metrics=market_metrics,
     )
 
 
@@ -124,6 +136,13 @@ def print_result(result: SimulationResult) -> None:
     print("\n--- Portfolio Vulnerability ---")
     print(f"Score     : {result.vulnerability_score}/100")
     print(f"Risk Level: {result.risk_level.upper()}")
+
+    if result.market_metrics:
+        portfolio_metrics = result.market_metrics["portfolio_metrics"]
+        print("\n--- Market Metrics ---")
+        print(f"Portfolio Volatility     : {portfolio_metrics['portfolio_volatility']}")
+        print(f"Avg Pairwise Correlation : {portfolio_metrics['average_pairwise_correlation']}")
+        print(f"Benchmark                : {portfolio_metrics['benchmark']}")
 
     print("\n--- Dominant Risk Factors ---")
     for factor, contribution in result.factor_contributions.items():
@@ -187,6 +206,11 @@ def parse_args() -> argparse.Namespace:
         help="Save the simulation result as a JSON artifact.",
     )
     parser.add_argument(
+        "--use-market-data",
+        action="store_true",
+        help="Include live market metrics from yfinance in the simulation result.",
+    )
+    parser.add_argument(
         "--output",
         default="reports/json/latest_simulation.json",
         help="Output path for JSON result when --save-json is used.",
@@ -204,6 +228,7 @@ if __name__ == "__main__":
         simulation_result = run_simulation(
             portfolio_id=args.portfolio,
             scenario_id=args.scenario,
+            use_market_data=args.use_market_data,
         )
         print_result(simulation_result)
 

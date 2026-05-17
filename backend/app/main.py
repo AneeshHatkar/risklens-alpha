@@ -12,6 +12,7 @@ from backend.app.services.portfolio_parser import normalize_portfolio
 from backend.app.services.risk_scoring import score_portfolio
 from backend.app.services.scenario_generator import SCENARIOS, get_scenario
 from backend.app.services.scenario_comparison import compare_scenarios
+from backend.app.services.what_if import compare_what_if_portfolios
 
 
 DISCLAIMER = (
@@ -172,6 +173,68 @@ def print_scenario_comparison(portfolio_id: str, results: list[dict]) -> None:
 
     print("=" * 72 + "\n")
 
+
+
+def run_what_if_demo(
+    portfolio_id: str = "ai_growth_sample",
+    scenario_id: str = "ai_capex_slowdown",
+    use_market_data: bool = False,
+) -> dict:
+    raw_base = load_sample_portfolio(portfolio_id)
+    base_portfolio = normalize_portfolio(raw_base)
+    scenario = get_scenario(scenario_id)
+
+    what_if_raw = {
+        "name": f"What-if version of {base_portfolio.name}",
+        "holdings": [
+            {"ticker": "NVDA", "weight": 0.20},
+            {"ticker": "MSFT", "weight": 0.25},
+            {"ticker": "AAPL", "weight": 0.25},
+            {"ticker": "SPY", "weight": 0.30},
+        ],
+    }
+    what_if_portfolio = normalize_portfolio(what_if_raw)
+
+    market_metrics = None
+    if use_market_data:
+        market_metrics = compute_market_metrics(
+            portfolio=base_portfolio,
+            start="2024-01-01",
+            benchmark="SPY",
+        )
+
+    return compare_what_if_portfolios(
+        base_portfolio=base_portfolio,
+        what_if_portfolio=what_if_portfolio,
+        scenario=scenario,
+        market_metrics=market_metrics,
+    )
+
+
+def print_what_if_result(result: dict) -> None:
+    print("\n" + "=" * 72)
+    print("RiskLens Alpha What-if Portfolio Analysis")
+    print("=" * 72)
+
+    print(f"\nScenario: {result['scenario_name']}")
+
+    print("\nBase Portfolio:")
+    print(f"- Score: {result['base']['vulnerability_score']}/100 ({result['base']['risk_level'].upper()})")
+    print(f"- Hidden concentration: {result['base']['hidden_concentration']['score']}/100")
+
+    print("\nWhat-if Portfolio:")
+    print(f"- Score: {result['what_if']['vulnerability_score']}/100 ({result['what_if']['risk_level'].upper()})")
+    print(f"- Hidden concentration: {result['what_if']['hidden_concentration']['score']}/100")
+
+    print("\nChange:")
+    print(f"- Vulnerability score delta: {result['score_delta']}")
+    print(f"- Hidden concentration delta: {result['hidden_concentration_delta']}")
+    print(result["interpretation"])
+
+    print("\nSafety Note:")
+    print(result["safety_note"])
+    print("=" * 72 + "\n")
+
 def save_result_json(result: SimulationResult, output_path: str) -> Path:
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -291,6 +354,11 @@ def parse_args() -> argparse.Namespace:
         help="Run the selected portfolio against every predefined scenario.",
     )
     parser.add_argument(
+        "--what-if-demo",
+        action="store_true",
+        help="Run a built-in what-if portfolio adjustment demo.",
+    )
+    parser.add_argument(
         "--output",
         default="reports/json/latest_simulation.json",
         help="Output path for JSON result when --save-json is used.",
@@ -317,6 +385,20 @@ if __name__ == "__main__":
             with open(saved_path, "w", encoding="utf-8") as file:
                 json.dump(comparison_results, file, indent=2)
             print(f"Saved scenario comparison JSON to: {saved_path}")
+    elif args.what_if_demo:
+        what_if_result = run_what_if_demo(
+            portfolio_id=args.portfolio,
+            scenario_id=args.scenario,
+            use_market_data=args.use_market_data,
+        )
+        print_what_if_result(what_if_result)
+
+        if args.save_json:
+            saved_path = Path(args.output)
+            saved_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(saved_path, "w", encoding="utf-8") as file:
+                json.dump(what_if_result, file, indent=2)
+            print(f"Saved what-if JSON to: {saved_path}")
     else:
         simulation_result = run_simulation(
             portfolio_id=args.portfolio,

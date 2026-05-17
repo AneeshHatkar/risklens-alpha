@@ -9,7 +9,9 @@ from backend.app.main import (
 from backend.app.services.market_metrics import compute_market_metrics
 from backend.app.services.portfolio_parser import normalize_portfolio
 from backend.app.services.scenario_comparison import compare_scenarios
-from backend.app.schemas import ScenarioComparisonRequest, SimulationRequest, SimulationResult
+from backend.app.services.what_if import compare_what_if_portfolios
+from backend.app.services.scenario_generator import get_scenario
+from backend.app.schemas import ScenarioComparisonRequest, SimulationRequest, SimulationResult, WhatIfRequest
 from backend.app.services.scenario_generator import SCENARIOS
 
 
@@ -99,6 +101,49 @@ def compare_simulation_scenarios(request: ScenarioComparisonRequest) -> list[dic
 
         return compare_scenarios(
             portfolio=portfolio,
+            market_metrics=market_metrics,
+        )
+
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.post("/simulate/what-if")
+def simulate_what_if(request: WhatIfRequest) -> dict:
+    try:
+        raw_portfolios = load_all_sample_portfolios()
+
+        if request.base_portfolio_id not in raw_portfolios:
+            valid = ", ".join(raw_portfolios.keys())
+            raise ValueError(
+                f"Unknown portfolio_id '{request.base_portfolio_id}'. Valid options: {valid}"
+            )
+
+        base_portfolio = normalize_portfolio(raw_portfolios[request.base_portfolio_id])
+
+        what_if_raw = {
+            "name": f"What-if version of {base_portfolio.name}",
+            "holdings": [
+                holding.model_dump(mode="json")
+                for holding in request.what_if_holdings
+            ],
+        }
+        what_if_portfolio = normalize_portfolio(what_if_raw)
+
+        scenario = get_scenario(request.scenario_id)
+
+        market_metrics = None
+        if request.use_market_data:
+            market_metrics = compute_market_metrics(
+                portfolio=base_portfolio,
+                start="2024-01-01",
+                benchmark="SPY",
+            )
+
+        return compare_what_if_portfolios(
+            base_portfolio=base_portfolio,
+            what_if_portfolio=what_if_portfolio,
+            scenario=scenario,
             market_metrics=market_metrics,
         )
 

@@ -99,3 +99,28 @@ def test_compare_scenarios_endpoint_returns_ranked_results():
     assert len(data) >= 5
     assert data[0]["vulnerability_score"] >= data[-1]["vulnerability_score"]
     assert "scenario_name" in data[0]
+
+
+def test_what_if_endpoint_returns_delta():
+    response = client.post(
+        "/simulate/what-if",
+        json={
+            "base_portfolio_id": "ai_growth_sample",
+            "scenario_id": "ai_capex_slowdown",
+            "use_market_data": False,
+            "what_if_holdings": [
+                {"ticker": "NVDA", "weight": 0.20},
+                {"ticker": "MSFT", "weight": 0.25},
+                {"ticker": "AAPL", "weight": 0.25},
+                {"ticker": "SPY", "weight": 0.30}
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "base" in data
+    assert "what_if" in data
+    assert "score_delta" in data
+    assert "safety_note" in data

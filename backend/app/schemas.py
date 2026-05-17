@@ -74,3 +74,11 @@ class SimulationRequest(BaseModel):
 class ScenarioComparisonRequest(BaseModel):
     portfolio_id: str = "ai_growth_sample"
     use_market_data: bool = False
+
+
+
+class WhatIfRequest(BaseModel):
+    base_portfolio_id: str = "ai_growth_sample"
+    scenario_id: str = "ai_capex_slowdown"
+    what_if_holdings: List[Holding]
+    use_market_data: bool = False

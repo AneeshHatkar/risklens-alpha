@@ -5,6 +5,7 @@ from pathlib import Path
 from backend.app.schemas import SimulationResult
 from backend.app.services.agent_debate import run_agent_debate
 from backend.app.services.factor_mapper import map_factors
+from backend.app.services.hidden_concentration import calculate_hidden_concentration
 from backend.app.services.market_metrics import compute_market_metrics
 from backend.app.services.confidence_engine import calculate_confidence_interval
 from backend.app.services.portfolio_parser import normalize_portfolio
@@ -97,6 +98,11 @@ def run_simulation(
         market_metrics=market_metrics,
     )
 
+    hidden_concentration = calculate_hidden_concentration(
+        portfolio=portfolio,
+        exposures=exposures,
+    )
+
     summary = build_summary(
         score=score,
         risk_level=risk_level,
@@ -119,6 +125,7 @@ def run_simulation(
         disclaimer=DISCLAIMER,
         market_metrics=market_metrics,
         confidence_interval=confidence_interval,
+        hidden_concentration=hidden_concentration,
     )
 
 
@@ -152,6 +159,15 @@ def print_result(result: SimulationResult) -> None:
         print("\n--- Confidence Interval ---")
         print(f"Range      : {interval['lower']}–{interval['upper']}")
         print(f"Confidence : {interval['confidence']} ({interval['label']})")
+
+    if result.hidden_concentration:
+        hidden = result.hidden_concentration
+        print("\n--- Hidden Concentration ---")
+        print(f"Score: {hidden['score']}/100 ({hidden['level']})")
+        print("Dominant overlap themes:")
+        for theme in hidden["dominant_themes"][:5]:
+            print(f"- {theme['factor']}: {theme['weighted_exposure']}")
+        print(hidden["explanation"])
 
     if result.market_metrics:
         portfolio_metrics = result.market_metrics["portfolio_metrics"]

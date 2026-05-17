@@ -60,6 +60,7 @@ class SimulationResult(BaseModel):
     disclaimer: str
     market_metrics: Optional[Dict] = None
     confidence_interval: Optional[Dict] = None
+    hidden_concentration: Optional[Dict] = None
 
 
 class SimulationRequest(BaseModel):

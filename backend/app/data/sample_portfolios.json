@@ -1,0 +1,29 @@
+{
+  "ai_growth_sample": {
+    "name": "AI Growth Sample Portfolio",
+    "holdings": [
+      {"ticker": "NVDA", "weight": 0.35},
+      {"ticker": "MSFT", "weight": 0.25},
+      {"ticker": "AAPL", "weight": 0.20},
+      {"ticker": "SPY", "weight": 0.20}
+    ]
+  },
+  "balanced_tech_sample": {
+    "name": "Balanced Technology Sample Portfolio",
+    "holdings": [
+      {"ticker": "AAPL", "weight": 0.25},
+      {"ticker": "MSFT", "weight": 0.25},
+      {"ticker": "QQQ", "weight": 0.25},
+      {"ticker": "SPY", "weight": 0.25}
+    ]
+  },
+  "semiconductor_sample": {
+    "name": "Semiconductor Concentration Sample Portfolio",
+    "holdings": [
+      {"ticker": "NVDA", "weight": 0.40},
+      {"ticker": "SMH", "weight": 0.35},
+      {"ticker": "MSFT", "weight": 0.15},
+      {"ticker": "SPY", "weight": 0.10}
+    ]
+  }
+}

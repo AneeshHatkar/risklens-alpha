@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# IDE/editor folders
+.vscode/
+.idea/
+
+# Frontend
+node_modules/
+dist/
+build/
+
+# Generated reports and exports
+reports/json/*.json
+reports/html/*.html
+reports/pdf/*.pdf
+
+# Logs
+*.log
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3

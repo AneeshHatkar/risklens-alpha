@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+pandas
+numpy
+scikit-learn
+networkx
+python-dotenv
+pytest
+jinja2
+matplotlib

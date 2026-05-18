@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.app.config import get_settings
+
 from backend.app.main import (
     load_all_sample_portfolios,
     run_simulation,
@@ -16,13 +18,15 @@ from backend.app.schemas import AssetProfile, AssetSearchResult, ScenarioCompari
 from backend.app.services.scenario_generator import SCENARIOS
 
 
+settings = get_settings()
+
 app = FastAPI(
-    title="RiskLens Alpha API",
+    title=f"{settings.app_name} API",
     description=(
         "API for portfolio shock simulation, factor exposure analysis, "
         "multi-agent risk debate, and explainable vulnerability scoring."
     ),
-    version="0.1.0",
+    version=settings.app_version,
 )
 
 # This is intentionally open during local development.
@@ -44,6 +48,14 @@ def health_check() -> dict:
         "version": "0.1.0",
     }
 
+
+
+
+
+@app.get("/config/status")
+def config_status() -> dict:
+    settings = get_settings()
+    return settings.public_config()
 
 @app.get("/portfolios/samples")
 def get_sample_portfolios() -> dict:
@@ -94,10 +106,11 @@ def compare_simulation_scenarios(request: ScenarioComparisonRequest) -> list[dic
 
         market_metrics = None
         if request.use_market_data:
+            settings = get_settings()
             market_metrics = compute_market_metrics(
                 portfolio=portfolio,
-                start="2024-01-01",
-                benchmark="SPY",
+                start=settings.market_data_start_date,
+                benchmark=settings.market_data_benchmark,
             )
 
         return compare_scenarios(

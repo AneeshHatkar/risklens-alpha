@@ -2,6 +2,8 @@ import argparse
 import json
 from pathlib import Path
 
+from backend.app.config import get_settings
+
 from backend.app.schemas import SimulationResult
 from backend.app.services.agent_debate import run_agent_debate
 from backend.app.services.factor_mapper import map_factors
@@ -68,10 +70,11 @@ def run_simulation(
 
     market_metrics = None
     if use_market_data:
+        settings = get_settings()
         market_metrics = compute_market_metrics(
             portfolio=portfolio,
-            start="2024-01-01",
-            benchmark="SPY",
+            start=settings.market_data_start_date,
+            benchmark=settings.market_data_benchmark,
         )
 
     exposures = map_factors(portfolio, scenario)
@@ -142,10 +145,11 @@ def run_scenario_comparison(
 
     market_metrics = None
     if use_market_data:
+        settings = get_settings()
         market_metrics = compute_market_metrics(
             portfolio=portfolio,
-            start="2024-01-01",
-            benchmark="SPY",
+            start=settings.market_data_start_date,
+            benchmark=settings.market_data_benchmark,
         )
 
     return compare_scenarios(

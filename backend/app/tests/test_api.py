@@ -145,3 +145,14 @@ def test_asset_detail_endpoint_returns_profile_without_market_data():
     assert data["name"] == "NVIDIA Corporation"
     assert data["market_metrics"] is None
     assert len(data["factor_exposures"]) > 0
+
+
+def test_config_status_endpoint_is_safe():
+    response = client.get("/config/status")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["app_name"] == "RiskLens Alpha"
+    assert "configured_optional_providers" in data
+    assert "api_key" not in str(data).lower()

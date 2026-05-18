@@ -1,0 +1,47 @@
+[
+  {
+    "case_id": "ai_growth_ai_capex",
+    "portfolio_id": "ai_growth_sample",
+    "scenario_id": "ai_capex_slowdown",
+    "expected_min_score": 60,
+    "expected_risk_levels": ["high", "severe"],
+    "expected_factors": [
+      "AI infrastructure",
+      "semiconductors",
+      "cloud growth",
+      "big-tech correlation",
+      "valuation multiples"
+    ],
+    "expected_holdings": ["NVDA", "MSFT"],
+    "description": "AI-heavy portfolio should show high vulnerability to an AI infrastructure spending slowdown."
+  },
+  {
+    "case_id": "semiconductor_export_restriction",
+    "portfolio_id": "semiconductor_sample",
+    "scenario_id": "semiconductor_export_restriction",
+    "expected_min_score": 55,
+    "expected_risk_levels": ["moderate", "high", "severe"],
+    "expected_factors": [
+      "semiconductors",
+      "China exposure",
+      "hardware supply chain"
+    ],
+    "expected_holdings": ["NVDA", "SMH"],
+    "description": "Semiconductor-heavy portfolio should show strong exposure to export restriction scenarios."
+  },
+  {
+    "case_id": "balanced_tech_rates",
+    "portfolio_id": "balanced_tech_sample",
+    "scenario_id": "higher_for_longer_rates",
+    "expected_min_score": 55,
+    "expected_risk_levels": ["moderate", "high", "severe"],
+    "expected_factors": [
+      "interest rates",
+      "valuation multiples",
+      "growth stocks",
+      "market beta"
+    ],
+    "expected_holdings": ["QQQ", "MSFT", "AAPL"],
+    "description": "Growth-oriented technology portfolio should show rate and valuation sensitivity."
+  }
+]

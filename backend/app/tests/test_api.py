@@ -214,3 +214,15 @@ def test_generate_sample_pdf_report_endpoint_handles_browser_availability():
         assert data["path"].endswith(".pdf")
     else:
         assert "browser" in response.json()["detail"].lower()
+
+
+def test_evaluate_endpoint_returns_suite_result():
+    response = client.get("/evaluate?use_market_data=false")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["suite_name"] == "RiskLens Alpha Evaluation Suite"
+    assert data["case_count"] >= 3
+    assert 0 <= data["overall_score"] <= 100
+    assert "results" in data

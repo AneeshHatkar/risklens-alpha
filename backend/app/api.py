@@ -60,6 +60,7 @@ from backend.app.services.hidden_concentration import calculate_hidden_concentra
 from backend.app.services.evidence_tracker import build_simulation_evidence
 from backend.app.services.report_generator import render_risk_report_html
 from backend.app.services.pdf_report import render_risk_report_pdf
+from backend.app.services.evaluation_runner import run_evaluation_suite
 
 
 settings = get_settings()
@@ -481,3 +482,9 @@ def generate_sample_pdf_report(request: SimulationRequest) -> dict:
         raise HTTPException(status_code=503, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+
+@app.get("/evaluate")
+def evaluate_system(use_market_data: bool = False) -> dict:
+    return run_evaluation_suite(use_market_data=use_market_data)

@@ -65,6 +65,8 @@ from backend.app.services.pdf_report import render_risk_report_pdf
 from backend.app.services.evaluation_runner import run_evaluation_suite
 from backend.app.services.historical_shocks import list_historical_shocks, replay_historical_shock
 from backend.app.services.benchmark_comparison import list_benchmarks, compare_portfolio_to_benchmarks
+from backend.app.services.job_manager import get_scheduler_status, run_market_refresh_job, start_scheduler, stop_scheduler
+from backend.app.services.timeline_repository import list_timeline_points, save_timeline_point, timeline_point_to_dict
 
 
 settings = get_settings()
@@ -368,8 +370,17 @@ def simulate_database_portfolio(
         result=result,
     )
 
+    timeline_point = save_timeline_point(
+        db=db,
+        portfolio_id=portfolio_id,
+        scenario_id=request.scenario_id,
+        result=result,
+        source="database_simulation",
+    )
+
     return {
         "simulation_run_id": run.id,
+        "timeline_point_id": timeline_point.id,
         "result": result.model_dump(mode="json"),
     }
 
@@ -552,3 +563,46 @@ def compare_benchmarks(request: BenchmarkComparisonRequest) -> dict:
 
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+
+@app.get("/jobs/status")
+def get_jobs_status() -> dict:
+    return get_scheduler_status()
+
+
+@app.post("/jobs/start")
+def start_background_jobs() -> dict:
+    return start_scheduler()
+
+
+@app.post("/jobs/stop")
+def stop_background_jobs() -> dict:
+    return stop_scheduler()
+
+
+@app.post("/jobs/run-market-refresh")
+def run_market_refresh_now() -> dict:
+    return run_market_refresh_job()
+
+
+@app.get("/db/portfolios/{portfolio_id}/timeline")
+def get_portfolio_risk_timeline(
+    portfolio_id: int,
+    scenario_id: str | None = None,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    portfolio = get_portfolio_by_id(db, portfolio_id)
+
+    if portfolio is None:
+        raise HTTPException(status_code=404, detail="Portfolio not found.")
+
+    points = list_timeline_points(
+        db=db,
+        portfolio_id=portfolio_id,
+        scenario_id=scenario_id,
+        limit=limit,
+    )
+
+    return [timeline_point_to_dict(point) for point in points]

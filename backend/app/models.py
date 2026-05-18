@@ -74,3 +74,19 @@ class ReportModel(Base):
     pdf_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class RiskTimelinePointModel(Base):
+    __tablename__ = "risk_timeline_points"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    portfolio_id: Mapped[int] = mapped_column(ForeignKey("portfolios.id"), nullable=False, index=True)
+    scenario_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    scenario_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    vulnerability_score: Mapped[int] = mapped_column(Integer, nullable=False)
+    risk_level: Mapped[str] = mapped_column(String(50), nullable=False)
+    hidden_concentration_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    confidence_lower: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    confidence_upper: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    source: Mapped[str] = mapped_column(String(100), default="simulation")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

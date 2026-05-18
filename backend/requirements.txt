@@ -13,3 +13,4 @@ matplotlib
 httpx
 yfinance
 sqlalchemyplaywright
+apscheduler

@@ -284,3 +284,23 @@ def test_benchmark_compare_endpoint_returns_result():
     assert "portfolio_metrics" in data
     assert "benchmarks" in data
     assert len(data["benchmarks"]) == 2
+
+
+def test_jobs_status_endpoint_returns_shape():
+    response = client.get("/jobs/status")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "running" in data
+    assert "jobs" in data
+
+
+def test_jobs_status_endpoint_returns_shape():
+    response = client.get("/jobs/status")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "running" in data
+    assert "jobs" in data

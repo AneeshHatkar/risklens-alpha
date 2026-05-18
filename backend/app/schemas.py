@@ -183,3 +183,24 @@ class BenchmarkComparisonRequest(BaseModel):
     start: str = "2024-01-01"
     end: Optional[str] = None
     use_cache: bool = True
+
+
+class RiskTimelinePoint(BaseModel):
+    id: int
+    portfolio_id: int
+    scenario_id: str
+    scenario_name: str
+    vulnerability_score: int
+    risk_level: str
+    hidden_concentration_score: Optional[int] = None
+    confidence_lower: Optional[int] = None
+    confidence_upper: Optional[int] = None
+    source: str
+    created_at: str
+
+
+class JobRunResult(BaseModel):
+    job_name: str
+    status: str
+    message: str
+    details: Dict = {}

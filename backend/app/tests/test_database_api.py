@@ -250,3 +250,43 @@ def test_database_watchlist_endpoints():
     assert delete_response.json()["deleted"] is True
 
     clear_overrides()
+
+
+def test_database_simulation_creates_timeline_point():
+    client = make_test_client()
+
+    create_response = client.post(
+        "/db/portfolios",
+        json={
+            "name": "Timeline API Portfolio",
+            "owner_label": "test",
+            "holdings": [
+                {"ticker": "NVDA", "weight": 0.5},
+                {"ticker": "SPY", "weight": 0.5},
+            ],
+        },
+    )
+
+    portfolio_id = create_response.json()["id"]
+
+    simulate_response = client.post(
+        f"/db/portfolios/{portfolio_id}/simulate",
+        json={
+            "scenario_id": "ai_capex_slowdown",
+            "use_market_data": False,
+            "save_json": False,
+        },
+    )
+
+    assert simulate_response.status_code == 200
+    assert "timeline_point_id" in simulate_response.json()
+
+    timeline_response = client.get(f"/db/portfolios/{portfolio_id}/timeline")
+
+    assert timeline_response.status_code == 200
+    timeline = timeline_response.json()
+
+    assert len(timeline) == 1
+    assert timeline[0]["scenario_id"] == "ai_capex_slowdown"
+
+    clear_overrides()

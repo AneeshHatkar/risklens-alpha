@@ -260,3 +260,19 @@ class LiveWeightResult(BaseModel):
     holdings: List[LiveWeightHoldingResult]
     normalized_portfolio: Portfolio
     warnings: List[str] = []
+
+
+
+class NarrativeClassificationRequest(BaseModel):
+    title: str
+    summary: str = ""
+    top_k: int = 3
+
+
+class NarrativeClassificationResult(BaseModel):
+    title: str
+    summary: str
+    predicted_label: str
+    confidence: float
+    top_labels: List[Dict]
+    model_path: str

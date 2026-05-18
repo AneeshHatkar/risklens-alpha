@@ -32,6 +32,7 @@ from backend.app.schemas import (
     BenchmarkComparisonRequest,
     AlertCheckRequest,
     LiveWeightRequest,
+    NarrativeClassificationRequest,
 )
 from backend.app.services.portfolio_repository import (
     create_portfolio,
@@ -73,6 +74,7 @@ from backend.app.services.alert_engine import check_alerts_for_portfolios
 from backend.app.services.alert_repository import alert_to_dict, delete_alert, list_alerts, mark_alert_read
 from backend.app.services.job_manager import run_alert_check_job
 from backend.app.services.portfolio_weight_engine import recalculate_weights_from_shares
+from backend.app.ml.narrative_classifier import load_model_metrics, predict_narrative
 
 
 settings = get_settings()
@@ -684,3 +686,24 @@ def run_alert_check_now() -> dict:
 def recalculate_portfolio_weights(request: LiveWeightRequest) -> dict:
     result = recalculate_weights_from_shares(request)
     return result.model_dump(mode="json")
+
+
+
+@app.post("/ml/narratives/classify")
+def classify_news_narrative(request: NarrativeClassificationRequest) -> dict:
+    try:
+        return predict_narrative(
+            title=request.title,
+            summary=request.summary,
+            top_k=request.top_k,
+        )
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+@app.get("/ml/narratives/metrics")
+def get_narrative_classifier_metrics() -> dict:
+    try:
+        return load_model_metrics()
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error

@@ -1,0 +1,47 @@
+{"title":"Cloud giants slow data center spending after AI infrastructure boom","summary":"Investors worry that hyperscaler AI capex growth may cool after several quarters of aggressive GPU demand.","label":"ai_capex_slowdown","tickers":["NVDA","MSFT","AMD","SMH"]}
+{"title":"AI server demand expectations reset after cautious cloud commentary","summary":"Semiconductor and cloud infrastructure stocks declined as analysts questioned the pace of AI infrastructure spending.","label":"ai_capex_slowdown","tickers":["NVDA","MSFT","SMH"]}
+{"title":"GPU suppliers fall on concerns about softer AI infrastructure orders","summary":"Chip stocks sold off after reports suggested some customers are delaying AI cluster expansion plans.","label":"ai_capex_slowdown","tickers":["NVDA","AMD","SMH"]}
+{"title":"Investors question whether AI infrastructure returns can justify capex","summary":"Mega-cap technology names faced pressure as markets reassessed the monetization timeline for AI infrastructure spending.","label":"ai_capex_slowdown","tickers":["MSFT","GOOGL","AMZN","NVDA"]}
+{"title":"AI hardware names slide as data center buildout optimism cools","summary":"The market reduced expectations for near-term AI server and accelerator demand.","label":"ai_capex_slowdown","tickers":["NVDA","AMD","SMH"]}
+
+{"title":"Fed officials signal rates may stay higher for longer","summary":"Growth stocks weakened after policymakers suggested inflation remains too firm for quick rate cuts.","label":"higher_for_longer_rates","tickers":["QQQ","SPY","MSFT","AAPL"]}
+{"title":"Treasury yields rise as market prices out near-term rate cuts","summary":"Higher yields pressured long-duration technology and growth equities.","label":"higher_for_longer_rates","tickers":["QQQ","XLK","MSFT","NVDA"]}
+{"title":"Growth stocks decline after stronger inflation data","summary":"Investors moved away from high-valuation equities as rate expectations shifted upward.","label":"higher_for_longer_rates","tickers":["QQQ","SPY","AAPL","MSFT"]}
+{"title":"Rate-sensitive technology stocks fall as yields climb","summary":"A rise in real yields triggered valuation pressure across software and mega-cap technology.","label":"higher_for_longer_rates","tickers":["MSFT","AAPL","QQQ"]}
+{"title":"Markets reprice policy path after hawkish central bank remarks","summary":"The higher-for-longer narrative weighed on equities with elevated valuation multiples.","label":"higher_for_longer_rates","tickers":["SPY","QQQ","XLK"]}
+
+{"title":"Enterprise cloud spending slows as companies reduce software budgets","summary":"Cloud infrastructure and enterprise software providers fell after signs of weaker IT spending.","label":"cloud_growth_deceleration","tickers":["MSFT","AMZN","GOOGL"]}
+{"title":"Cloud growth decelerates as enterprise customers optimize costs","summary":"Investors grew concerned that cloud revenue expansion may slow further.","label":"cloud_growth_deceleration","tickers":["MSFT","AMZN","GOOGL"]}
+{"title":"Software stocks slip after weaker enterprise demand outlook","summary":"Companies are taking longer to approve large cloud and software contracts.","label":"cloud_growth_deceleration","tickers":["MSFT","CRM","NOW"]}
+{"title":"Hyperscaler growth expectations fall after cautious management guidance","summary":"Cloud leaders emphasized optimization and efficiency, raising concerns about slower revenue growth.","label":"cloud_growth_deceleration","tickers":["MSFT","AMZN","GOOGL"]}
+{"title":"Enterprise IT spend weakens as customers delay cloud migrations","summary":"Cloud growth forecasts were revised lower across several technology companies.","label":"cloud_growth_deceleration","tickers":["MSFT","AMZN"]}
+
+{"title":"Chip stocks fall after new semiconductor export restrictions","summary":"Restrictions on advanced chip exports to China pressured GPU and semiconductor equipment names.","label":"semiconductor_export_restriction","tickers":["NVDA","AMD","SMH"]}
+{"title":"Washington expands export controls on AI accelerators","summary":"Semiconductor firms with China exposure declined after updated export rules.","label":"semiconductor_export_restriction","tickers":["NVDA","AMD","SMH"]}
+{"title":"Semiconductor sector hit by geopolitical restrictions","summary":"Investors worried that tighter export controls could reduce international chip revenue.","label":"semiconductor_export_restriction","tickers":["SMH","NVDA","AMD"]}
+{"title":"AI chip makers slide on China sales uncertainty","summary":"New export licensing rules raised concern about overseas demand for high-end accelerators.","label":"semiconductor_export_restriction","tickers":["NVDA","AMD"]}
+{"title":"Hardware supply chain stocks weaken after trade restriction headlines","summary":"Geopolitical risk weighed on semiconductor and hardware supply chain companies.","label":"semiconductor_export_restriction","tickers":["SMH","NVDA"]}
+
+{"title":"Retail sales weaken as consumers pull back on discretionary purchases","summary":"Consumer-facing companies fell after data suggested household demand is softening.","label":"consumer_demand_weakness","tickers":["AAPL","AMZN","TSLA","XLY"]}
+{"title":"Consumer electronics demand slows ahead of holiday season","summary":"Hardware and device makers faced pressure as analysts cut demand forecasts.","label":"consumer_demand_weakness","tickers":["AAPL","TSLA"]}
+{"title":"Discretionary stocks decline on weaker household spending","summary":"Markets reacted to signs that consumers are becoming more cautious.","label":"consumer_demand_weakness","tickers":["XLY","AMZN","AAPL"]}
+{"title":"Smartphone demand softens in key international markets","summary":"Apple shares slipped as supply chain checks pointed to weaker consumer electronics demand.","label":"consumer_demand_weakness","tickers":["AAPL"]}
+{"title":"E-commerce growth slows as shoppers reduce big-ticket purchases","summary":"Consumer demand weakness pressured online retail and discretionary names.","label":"consumer_demand_weakness","tickers":["AMZN","XLY"]}
+
+{"title":"Regional bank shares tumble after deposit outflow concerns","summary":"Financial stocks declined as investors worried about funding pressure and credit stress.","label":"banking_stress","tickers":["KRE","XLF","SPY"]}
+{"title":"Banking sector under pressure as credit risk rises","summary":"Regional lenders weakened after concerns about commercial real estate and deposit costs.","label":"banking_stress","tickers":["KRE","XLF"]}
+{"title":"Financial stress fears return after regional lender warning","summary":"Bank stocks sold off as markets reassessed balance sheet risks.","label":"banking_stress","tickers":["KRE","XLF","SPY"]}
+{"title":"Credit conditions tighten as banks become more cautious","summary":"Investors feared that tighter lending standards could weigh on economic growth.","label":"banking_stress","tickers":["XLF","SPY"]}
+{"title":"Regional banking stress triggers risk-off move","summary":"Markets moved lower as concerns about bank liquidity resurfaced.","label":"banking_stress","tickers":["KRE","XLF"]}
+
+{"title":"Oil prices surge after supply disruption raises inflation fears","summary":"Energy prices rose sharply, increasing concern about inflation pressure and consumer spending.","label":"oil_inflation_shock","tickers":["XLE","SPY","XLY"]}
+{"title":"Crude oil rally pressures inflation-sensitive equities","summary":"Stocks fell as higher energy costs renewed fears of sticky inflation.","label":"oil_inflation_shock","tickers":["XLE","SPY","QQQ"]}
+{"title":"Energy shock weighs on consumer and growth stocks","summary":"Rising fuel prices raised concerns about margins and household budgets.","label":"oil_inflation_shock","tickers":["XLE","XLY","SPY"]}
+{"title":"Inflation expectations rise as commodity prices jump","summary":"Markets sold off as oil and commodity gains complicated the rate outlook.","label":"oil_inflation_shock","tickers":["SPY","QQQ","XLE"]}
+{"title":"Oil supply concerns trigger inflation risk across markets","summary":"Investors rotated into energy while reducing exposure to rate-sensitive growth stocks.","label":"oil_inflation_shock","tickers":["XLE","QQQ"]}
+
+{"title":"Stocks sell off broadly as investors reduce risk exposure","summary":"Major indexes fell as volatility rose and investors moved toward defensive assets.","label":"broad_market_risk_off","tickers":["SPY","QQQ","IWM"]}
+{"title":"Risk-off sentiment hits equities across sectors","summary":"Investors sold stocks broadly amid macro uncertainty and rising volatility.","label":"broad_market_risk_off","tickers":["SPY","QQQ","VTI"]}
+{"title":"Market volatility jumps as investors seek safety","summary":"Broad equity benchmarks declined as risk appetite weakened.","label":"broad_market_risk_off","tickers":["SPY","VTI","IWM"]}
+{"title":"Equities decline on global growth concerns","summary":"A broad market selloff pressured growth, small-cap, and cyclical stocks.","label":"broad_market_risk_off","tickers":["SPY","QQQ","IWM"]}
+{"title":"Investors rotate defensively after risk sentiment deteriorates","summary":"Broad indexes slipped as market participants reduced exposure to risky assets.","label":"broad_market_risk_off","tickers":["SPY","VTI"]}

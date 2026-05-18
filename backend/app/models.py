@@ -90,3 +90,20 @@ class RiskTimelinePointModel(Base):
     confidence_upper: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     source: Mapped[str] = mapped_column(String(100), default="simulation")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class AlertModel(Base):
+    __tablename__ = "alerts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    portfolio_id: Mapped[int] = mapped_column(ForeignKey("portfolios.id"), nullable=False, index=True)
+    alert_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    severity: Mapped[str] = mapped_column(String(50), nullable=False)
+    title: Mapped[str] = mapped_column(String(250), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    scenario_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    ticker: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    value: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    threshold: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    is_read: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

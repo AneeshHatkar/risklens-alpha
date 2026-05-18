@@ -204,3 +204,75 @@ class JobRunResult(BaseModel):
     status: str
     message: str
     details: Dict = {}
+
+
+class AlertItem(BaseModel):
+    id: int
+    portfolio_id: int
+    alert_type: str
+    severity: str
+    title: str
+    message: str
+    scenario_id: Optional[str] = None
+    ticker: Optional[str] = None
+    value: Optional[float] = None
+    threshold: Optional[float] = None
+    is_read: bool
+    created_at: str
+
+
+class AlertCheckRequest(BaseModel):
+    portfolio_id: Optional[int] = None
+    risk_threshold: int = 75
+    hidden_concentration_threshold: int = 80
+    volatility_threshold: float = 0.35
+    correlation_threshold: float = 0.70
+
+
+
+class LiveWeightHoldingInput(BaseModel):
+    ticker: str
+    shares: float
+    cost_basis: Optional[float] = None
+
+
+class LiveWeightRequest(BaseModel):
+    name: str = "Live Weight Portfolio"
+    holdings: List[LiveWeightHoldingInput]
+    start: str = "2024-01-01"
+    use_cache: bool = True
+
+
+class LiveWeightHoldingResult(BaseModel):
+    ticker: str
+    shares: float
+    latest_price: Optional[float] = None
+    market_value: Optional[float] = None
+    weight: Optional[float] = None
+    cost_basis: Optional[float] = None
+    available: bool = True
+    warning: Optional[str] = None
+
+
+class LiveWeightResult(BaseModel):
+    name: str
+    total_market_value: float
+    holdings: List[LiveWeightHoldingResult]
+    normalized_portfolio: Portfolio
+    warnings: List[str] = []
+
+
+
+class NarrativeClassificationRequest(BaseModel):
+    title: str
+    summary: str = ""
+    top_k: int = 3
+
+
+class NarrativeClassificationResult(BaseModel):
+    title: str
+    summary: str
+    predicted_label: str
+    confidence: float
+    top_labels: List[Dict]
+    model_path: str

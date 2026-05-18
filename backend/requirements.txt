@@ -14,3 +14,5 @@ httpx
 yfinance
 sqlalchemyplaywright
 apscheduler
+scikit-learn
+joblib

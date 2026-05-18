@@ -174,3 +174,12 @@ class HistoricalReplayRequest(BaseModel):
     portfolio_id: str = "ai_growth_sample"
     shock_id: str = "covid_crash_2020"
     use_cache: bool = True
+
+
+
+class BenchmarkComparisonRequest(BaseModel):
+    portfolio_id: str = "ai_growth_sample"
+    benchmark_tickers: List[str] = ["SPY", "QQQ", "SMH", "XLK"]
+    start: str = "2024-01-01"
+    end: Optional[str] = None
+    use_cache: bool = True

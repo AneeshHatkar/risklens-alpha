@@ -29,6 +29,7 @@ from backend.app.schemas import (
     WatchlistItem,
     WhatIfRequest,
     HistoricalReplayRequest,
+    BenchmarkComparisonRequest,
 )
 from backend.app.services.portfolio_repository import (
     create_portfolio,
@@ -63,6 +64,7 @@ from backend.app.services.report_generator import render_risk_report_html
 from backend.app.services.pdf_report import render_risk_report_pdf
 from backend.app.services.evaluation_runner import run_evaluation_suite
 from backend.app.services.historical_shocks import list_historical_shocks, replay_historical_shock
+from backend.app.services.benchmark_comparison import list_benchmarks, compare_portfolio_to_benchmarks
 
 
 settings = get_settings()
@@ -514,6 +516,37 @@ def run_historical_replay(request: HistoricalReplayRequest) -> dict:
         return replay_historical_shock(
             portfolio=portfolio,
             shock_id=request.shock_id,
+            use_cache=request.use_cache,
+        )
+
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+
+@app.get("/benchmarks")
+def get_available_benchmarks() -> dict:
+    return list_benchmarks()
+
+
+@app.post("/benchmarks/compare")
+def compare_benchmarks(request: BenchmarkComparisonRequest) -> dict:
+    try:
+        raw_portfolios = load_all_sample_portfolios()
+
+        if request.portfolio_id not in raw_portfolios:
+            valid = ", ".join(raw_portfolios.keys())
+            raise ValueError(
+                f"Unknown portfolio_id '{request.portfolio_id}'. Valid options: {valid}"
+            )
+
+        portfolio = normalize_portfolio(raw_portfolios[request.portfolio_id])
+
+        return compare_portfolio_to_benchmarks(
+            portfolio=portfolio,
+            benchmark_tickers=request.benchmark_tickers,
+            start=request.start,
+            end=request.end,
             use_cache=request.use_cache,
         )
 

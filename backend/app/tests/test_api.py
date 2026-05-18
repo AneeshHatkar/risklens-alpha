@@ -254,3 +254,33 @@ def test_historical_replay_endpoint_returns_result():
     assert data["shock_id"] == "rate_shock_2022"
     assert "portfolio_metrics" in data
     assert "asset_impacts" in data
+
+
+def test_benchmarks_endpoint_returns_catalog():
+    response = client.get("/benchmarks")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "SPY" in data
+    assert "QQQ" in data
+
+
+def test_benchmark_compare_endpoint_returns_result():
+    response = client.post(
+        "/benchmarks/compare",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "benchmark_tickers": ["SPY", "QQQ"],
+            "start": "2024-01-01",
+            "end": None,
+            "use_cache": True,
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "portfolio_metrics" in data
+    assert "benchmarks" in data
+    assert len(data["benchmarks"]) == 2

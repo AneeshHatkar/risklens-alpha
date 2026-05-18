@@ -167,3 +167,10 @@ class SimulationRunSummary(BaseModel):
     vulnerability_score: int
     risk_level: str
     created_at: str
+
+
+
+class HistoricalReplayRequest(BaseModel):
+    portfolio_id: str = "ai_growth_sample"
+    shock_id: str = "covid_crash_2020"
+    use_cache: bool = True

@@ -28,6 +28,7 @@ from backend.app.schemas import (
     WatchlistCreateRequest,
     WatchlistItem,
     WhatIfRequest,
+    HistoricalReplayRequest,
 )
 from backend.app.services.portfolio_repository import (
     create_portfolio,
@@ -61,6 +62,7 @@ from backend.app.services.evidence_tracker import build_simulation_evidence
 from backend.app.services.report_generator import render_risk_report_html
 from backend.app.services.pdf_report import render_risk_report_pdf
 from backend.app.services.evaluation_runner import run_evaluation_suite
+from backend.app.services.historical_shocks import list_historical_shocks, replay_historical_shock
 
 
 settings = get_settings()
@@ -488,3 +490,32 @@ def generate_sample_pdf_report(request: SimulationRequest) -> dict:
 @app.get("/evaluate")
 def evaluate_system(use_market_data: bool = False) -> dict:
     return run_evaluation_suite(use_market_data=use_market_data)
+
+
+
+@app.get("/historical-shocks")
+def get_historical_shocks() -> dict:
+    return list_historical_shocks()
+
+
+@app.post("/historical-replay")
+def run_historical_replay(request: HistoricalReplayRequest) -> dict:
+    try:
+        raw_portfolios = load_all_sample_portfolios()
+
+        if request.portfolio_id not in raw_portfolios:
+            valid = ", ".join(raw_portfolios.keys())
+            raise ValueError(
+                f"Unknown portfolio_id '{request.portfolio_id}'. Valid options: {valid}"
+            )
+
+        portfolio = normalize_portfolio(raw_portfolios[request.portfolio_id])
+
+        return replay_historical_shock(
+            portfolio=portfolio,
+            shock_id=request.shock_id,
+            use_cache=request.use_cache,
+        )
+
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error

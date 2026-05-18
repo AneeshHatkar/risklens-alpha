@@ -226,3 +226,31 @@ def test_evaluate_endpoint_returns_suite_result():
     assert data["case_count"] >= 3
     assert 0 <= data["overall_score"] <= 100
     assert "results" in data
+
+
+def test_historical_shocks_endpoint_returns_catalog():
+    response = client.get("/historical-shocks")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "covid_crash_2020" in data
+    assert "rate_shock_2022" in data
+
+
+def test_historical_replay_endpoint_returns_result():
+    response = client.post(
+        "/historical-replay",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "shock_id": "rate_shock_2022",
+            "use_cache": True,
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["shock_id"] == "rate_shock_2022"
+    assert "portfolio_metrics" in data
+    assert "asset_impacts" in data

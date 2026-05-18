@@ -193,3 +193,24 @@ def test_generate_sample_report_endpoint():
     assert data["report_type"] == "html"
     assert data["vulnerability_score"] >= 60
     assert data["path"].endswith(".html")
+
+
+def test_generate_sample_pdf_report_endpoint_handles_browser_availability():
+    response = client.post(
+        "/reports/sample/pdf",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "scenario_id": "ai_capex_slowdown",
+            "save_json": False,
+            "use_market_data": False,
+        },
+    )
+
+    assert response.status_code in {200, 503}
+
+    if response.status_code == 200:
+        data = response.json()
+        assert data["report_type"] == "pdf"
+        assert data["path"].endswith(".pdf")
+    else:
+        assert "browser" in response.json()["detail"].lower()

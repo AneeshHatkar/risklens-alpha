@@ -47,3 +47,6 @@ risklens_alpha.db
 risklens_alpha.db-*
 
 
+
+# Generated PDF reports
+reports/pdf/*.pdf

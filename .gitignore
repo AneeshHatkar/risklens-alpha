@@ -38,3 +38,10 @@ reports/pdf/*.pdf
 *.db
 *.sqlite
 *.sqlite3
+
+# Local cache
+.cache/
+
+# Local SQLite database
+risklens_alpha.db
+risklens_alpha.db-*

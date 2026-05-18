@@ -106,3 +106,49 @@ class AssetProfile(BaseModel):
     factor_exposures: List[FactorExposure] = []
     related_scenarios: List[str] = []
     warnings: List[str] = []
+
+
+class PortfolioCreateRequest(BaseModel):
+    name: str
+    owner_label: str = "local"
+    holdings: List[Holding]
+
+
+class PortfolioSummary(BaseModel):
+    id: int
+    name: str
+    owner_label: str
+    holding_count: int
+    created_at: str
+
+
+class PortfolioDetail(BaseModel):
+    id: int
+    name: str
+    owner_label: str
+    holdings: List[Holding]
+    created_at: str
+
+
+class WatchlistCreateRequest(BaseModel):
+    ticker: str
+    name: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class WatchlistItem(BaseModel):
+    id: int
+    ticker: str
+    name: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: str
+
+
+class SimulationRunSummary(BaseModel):
+    id: int
+    portfolio_id: int
+    scenario_id: str
+    scenario_name: str
+    vulnerability_score: int
+    risk_level: str
+    created_at: str

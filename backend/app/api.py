@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 from backend.app.config import get_settings
 
@@ -14,7 +15,42 @@ from backend.app.services.scenario_comparison import compare_scenarios
 from backend.app.services.what_if import compare_what_if_portfolios
 from backend.app.services.scenario_generator import get_scenario
 from backend.app.services.asset_explorer import find_assets, get_asset_profile
-from backend.app.schemas import AssetProfile, AssetSearchResult, ScenarioComparisonRequest, SimulationRequest, SimulationResult, WhatIfRequest
+from backend.app.database import get_db, init_db
+from backend.app.schemas import (
+    AssetProfile,
+    AssetSearchResult,
+    PortfolioCreateRequest,
+    PortfolioDetail,
+    PortfolioSummary,
+    ScenarioComparisonRequest,
+    SimulationRequest,
+    SimulationResult,
+    WatchlistCreateRequest,
+    WatchlistItem,
+    WhatIfRequest,
+)
+from backend.app.services.portfolio_repository import (
+    create_portfolio,
+    delete_portfolio,
+    get_portfolio_by_id,
+    list_portfolios,
+    portfolio_detail,
+    portfolio_model_to_schema,
+    portfolio_summary,
+)
+from backend.app.services.simulation_repository import (
+    get_simulation_run,
+    list_simulation_runs,
+    save_simulation_run,
+    simulation_run_detail,
+    simulation_run_summary,
+)
+from backend.app.services.watchlist_repository import (
+    add_watchlist_item,
+    delete_watchlist_item,
+    list_watchlist_items,
+    watchlist_item_to_dict,
+)
 from backend.app.services.scenario_generator import SCENARIOS
 
 
@@ -38,6 +74,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Create local SQLite tables on startup for the personal/local version.
+init_db()
 
 
 @app.get("/health")
@@ -176,3 +215,193 @@ def get_asset_detail(ticker: str, use_market_data: bool = True) -> AssetProfile:
         ticker=ticker,
         use_market_data=use_market_data,
     )
+
+
+
+@app.post("/db/portfolios", response_model=PortfolioSummary)
+def create_database_portfolio(
+    request: PortfolioCreateRequest,
+    db: Session = Depends(get_db),
+) -> dict:
+    portfolio = create_portfolio(db, request)
+    return portfolio_summary(portfolio)
+
+
+@app.get("/db/portfolios", response_model=list[PortfolioSummary])
+def list_database_portfolios(db: Session = Depends(get_db)) -> list[dict]:
+    return [portfolio_summary(item) for item in list_portfolios(db)]
+
+
+@app.get("/db/portfolios/{portfolio_id}", response_model=PortfolioDetail)
+def get_database_portfolio(
+    portfolio_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    portfolio = get_portfolio_by_id(db, portfolio_id)
+
+    if portfolio is None:
+        raise HTTPException(status_code=404, detail="Portfolio not found.")
+
+    return portfolio_detail(portfolio)
+
+
+@app.delete("/db/portfolios/{portfolio_id}")
+def delete_database_portfolio(
+    portfolio_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    deleted = delete_portfolio(db, portfolio_id)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Portfolio not found.")
+
+    return {"deleted": True, "portfolio_id": portfolio_id}
+
+
+@app.post("/db/portfolios/{portfolio_id}/simulate")
+def simulate_database_portfolio(
+    portfolio_id: int,
+    request: SimulationRequest,
+    db: Session = Depends(get_db),
+) -> dict:
+    portfolio_model = get_portfolio_by_id(db, portfolio_id)
+
+    if portfolio_model is None:
+        raise HTTPException(status_code=404, detail="Portfolio not found.")
+
+    portfolio = portfolio_model_to_schema(portfolio_model)
+    scenario = get_scenario(request.scenario_id)
+
+    market_metrics = None
+    if request.use_market_data:
+        settings = get_settings()
+        market_metrics = compute_market_metrics(
+            portfolio=portfolio,
+            start=settings.market_data_start_date,
+            benchmark=settings.market_data_benchmark,
+        )
+
+    exposures = map_factors(portfolio, scenario)
+    agent_opinions = run_agent_debate(portfolio, scenario, exposures)
+
+    score, risk_level, factor_contributions, holding_risks = score_portfolio(
+        portfolio=portfolio,
+        scenario=scenario,
+        exposures=exposures,
+        agent_opinions=agent_opinions,
+        market_metrics=market_metrics,
+    )
+
+    dominant_factors = list(factor_contributions.keys())
+    most_vulnerable_holdings = [
+        holding.ticker for holding in holding_risks
+        if holding.risk_score >= 20
+    ][:3]
+
+    confidence_interval = calculate_confidence_interval(
+        score=score,
+        portfolio=portfolio,
+        exposures=exposures,
+        agent_opinions=agent_opinions,
+        market_metrics=market_metrics,
+    )
+
+    hidden_concentration = calculate_hidden_concentration(
+        portfolio=portfolio,
+        exposures=exposures,
+    )
+
+    summary = (
+        f"The portfolio has a {risk_level} simulated vulnerability score of {score}/100 "
+        f"under the '{scenario.name}' scenario. The dominant mapped risk themes are "
+        f"{', '.join(dominant_factors[:4])}."
+    )
+
+    result = SimulationResult(
+        portfolio_name=portfolio.name,
+        scenario=scenario,
+        vulnerability_score=score,
+        risk_level=risk_level,
+        dominant_factors=dominant_factors,
+        most_vulnerable_holdings=most_vulnerable_holdings,
+        holding_risks=holding_risks,
+        factor_contributions=factor_contributions,
+        agent_opinions=agent_opinions,
+        summary=summary,
+        disclaimer=(
+            "Educational scenario analysis only. This is not financial advice, "
+            "does not recommend buying or selling securities, and does not guarantee future returns."
+        ),
+        market_metrics=market_metrics,
+        confidence_interval=confidence_interval,
+        hidden_concentration=hidden_concentration,
+    )
+
+    run = save_simulation_run(
+        db=db,
+        portfolio_id=portfolio_id,
+        scenario_id=request.scenario_id,
+        result=result,
+    )
+
+    return {
+        "simulation_run_id": run.id,
+        "result": result.model_dump(mode="json"),
+    }
+
+
+@app.get("/db/simulation-runs")
+def list_database_simulation_runs(
+    portfolio_id: int | None = None,
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    return [
+        simulation_run_summary(item)
+        for item in list_simulation_runs(db, portfolio_id=portfolio_id)
+    ]
+
+
+@app.get("/db/simulation-runs/{run_id}")
+def get_database_simulation_run(
+    run_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    run = get_simulation_run(db, run_id)
+
+    if run is None:
+        raise HTTPException(status_code=404, detail="Simulation run not found.")
+
+    return simulation_run_detail(run)
+
+
+@app.post("/db/watchlist", response_model=WatchlistItem)
+def add_database_watchlist_item(
+    request: WatchlistCreateRequest,
+    db: Session = Depends(get_db),
+) -> dict:
+    item = add_watchlist_item(
+        db=db,
+        ticker=request.ticker,
+        name=request.name,
+        notes=request.notes,
+    )
+
+    return watchlist_item_to_dict(item)
+
+
+@app.get("/db/watchlist", response_model=list[WatchlistItem])
+def list_database_watchlist(db: Session = Depends(get_db)) -> list[dict]:
+    return [watchlist_item_to_dict(item) for item in list_watchlist_items(db)]
+
+
+@app.delete("/db/watchlist/{item_id}")
+def delete_database_watchlist_item(
+    item_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    deleted = delete_watchlist_item(db, item_id)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Watchlist item not found.")
+
+    return {"deleted": True, "watchlist_item_id": item_id}

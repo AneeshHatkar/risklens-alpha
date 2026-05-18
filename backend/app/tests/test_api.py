@@ -174,3 +174,22 @@ def test_simulate_endpoint_includes_evidence_items():
 
     assert "evidence_items" in data
     assert len(data["evidence_items"]) > 0
+
+
+def test_generate_sample_report_endpoint():
+    response = client.post(
+        "/reports/sample",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "scenario_id": "ai_capex_slowdown",
+            "save_json": False,
+            "use_market_data": False,
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["report_type"] == "html"
+    assert data["vulnerability_score"] >= 60
+    assert data["path"].endswith(".html")

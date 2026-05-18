@@ -58,6 +58,7 @@ from backend.app.services.risk_scoring import score_portfolio
 from backend.app.services.confidence_engine import calculate_confidence_interval
 from backend.app.services.hidden_concentration import calculate_hidden_concentration
 from backend.app.services.evidence_tracker import build_simulation_evidence
+from backend.app.services.report_generator import render_risk_report_html
 
 
 settings = get_settings()
@@ -422,3 +423,30 @@ def delete_database_watchlist_item(
         raise HTTPException(status_code=404, detail="Watchlist item not found.")
 
     return {"deleted": True, "watchlist_item_id": item_id}
+
+
+
+@app.post("/reports/sample")
+def generate_sample_report(request: SimulationRequest) -> dict:
+    try:
+        result = run_simulation(
+            portfolio_id=request.portfolio_id,
+            scenario_id=request.scenario_id,
+            use_market_data=request.use_market_data,
+        )
+
+        output_path = render_risk_report_html(
+            result=result,
+            output_path=f"reports/html/{request.portfolio_id}_{request.scenario_id}_report.html",
+        )
+
+        return {
+            "report_type": "html",
+            "path": str(output_path),
+            "portfolio_name": result.portfolio_name,
+            "scenario_name": result.scenario.name,
+            "vulnerability_score": result.vulnerability_score,
+        }
+
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error

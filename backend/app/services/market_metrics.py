@@ -63,6 +63,9 @@ def compute_market_metrics(
         "start": start,
         "end": end,
         "missing_tickers": market_data.missing_tickers,
+        "warnings": market_data.warnings,
+        "used_cache": market_data.used_cache,
+        "cache_path": market_data.cache_path,
     }
 
     return {

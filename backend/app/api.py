@@ -11,7 +11,8 @@ from backend.app.services.portfolio_parser import normalize_portfolio
 from backend.app.services.scenario_comparison import compare_scenarios
 from backend.app.services.what_if import compare_what_if_portfolios
 from backend.app.services.scenario_generator import get_scenario
-from backend.app.schemas import ScenarioComparisonRequest, SimulationRequest, SimulationResult, WhatIfRequest
+from backend.app.services.asset_explorer import find_assets, get_asset_profile
+from backend.app.schemas import AssetProfile, AssetSearchResult, ScenarioComparisonRequest, SimulationRequest, SimulationResult, WhatIfRequest
 from backend.app.services.scenario_generator import SCENARIOS
 
 
@@ -149,3 +150,16 @@ def simulate_what_if(request: WhatIfRequest) -> dict:
 
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.get("/assets/search", response_model=list[AssetSearchResult])
+def search_asset_universe(query: str, limit: int = 10) -> list[AssetSearchResult]:
+    return find_assets(query=query, limit=limit)
+
+
+@app.get("/assets/{ticker}", response_model=AssetProfile)
+def get_asset_detail(ticker: str, use_market_data: bool = True) -> AssetProfile:
+    return get_asset_profile(
+        ticker=ticker,
+        use_market_data=use_market_data,
+    )

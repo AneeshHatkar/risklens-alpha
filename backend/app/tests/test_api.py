@@ -124,3 +124,24 @@ def test_what_if_endpoint_returns_delta():
     assert "what_if" in data
     assert "score_delta" in data
     assert "safety_note" in data
+
+
+def test_asset_search_endpoint_returns_results():
+    response = client.get("/assets/search?query=NVDA")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert any(item["ticker"] == "NVDA" for item in data)
+
+
+def test_asset_detail_endpoint_returns_profile_without_market_data():
+    response = client.get("/assets/NVDA?use_market_data=false")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["ticker"] == "NVDA"
+    assert data["name"] == "NVIDIA Corporation"
+    assert data["market_metrics"] is None
+    assert len(data["factor_exposures"]) > 0

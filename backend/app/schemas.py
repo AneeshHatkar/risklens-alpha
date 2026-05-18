@@ -82,3 +82,27 @@ class WhatIfRequest(BaseModel):
     scenario_id: str = "ai_capex_slowdown"
     what_if_holdings: List[Holding]
     use_market_data: bool = False
+
+
+
+class AssetSearchResult(BaseModel):
+    ticker: str
+    name: str
+    asset_type: str = "equity"
+    sector: Optional[str] = None
+    industry: Optional[str] = None
+
+
+class AssetProfile(BaseModel):
+    ticker: str
+    name: str
+    asset_type: str = "equity"
+    sector: Optional[str] = None
+    industry: Optional[str] = None
+    description: Optional[str] = None
+    latest_price: Optional[float] = None
+    currency: Optional[str] = None
+    market_metrics: Optional[Dict] = None
+    factor_exposures: List[FactorExposure] = []
+    related_scenarios: List[str] = []
+    warnings: List[str] = []

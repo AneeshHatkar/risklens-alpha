@@ -304,3 +304,34 @@ def test_jobs_status_endpoint_returns_shape():
 
     assert "running" in data
     assert "jobs" in data
+
+
+def test_alert_jobs_status_endpoint_exists():
+    response = client.post("/jobs/run-alert-check")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "job_name" in data
+    assert data["job_name"] == "alert_check"
+
+
+def test_recalculate_portfolio_weights_endpoint():
+    response = client.post(
+        "/portfolio/recalculate-weights",
+        json={
+            "name": "API Live Weight Portfolio",
+            "holdings": [
+                {"ticker": "NVDA", "shares": 1},
+                {"ticker": "MSFT", "shares": 1}
+            ],
+            "use_cache": True
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["total_market_value"] > 0
+    assert len(data["holdings"]) == 2
+    assert "normalized_portfolio" in data

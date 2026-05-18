@@ -222,3 +222,30 @@ def get_scheduler_status() -> dict:
             for job in scheduler.get_jobs()
         ],
     }
+
+
+
+def run_alert_check_job() -> dict:
+    try:
+        from backend.app.services.alert_engine import check_alerts_for_portfolios
+
+        db = SessionLocal()
+        try:
+            details = check_alerts_for_portfolios(db)
+        finally:
+            db.close()
+
+        return {
+            "job_name": "alert_check",
+            "status": "success",
+            "message": "Portfolio alerts checked.",
+            "details": details,
+        }
+
+    except Exception as error:
+        return {
+            "job_name": "alert_check",
+            "status": "failed",
+            "message": str(error),
+            "details": {},
+        }

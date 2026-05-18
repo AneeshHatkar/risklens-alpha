@@ -30,6 +30,8 @@ from backend.app.schemas import (
     WhatIfRequest,
     HistoricalReplayRequest,
     BenchmarkComparisonRequest,
+    AlertCheckRequest,
+    LiveWeightRequest,
 )
 from backend.app.services.portfolio_repository import (
     create_portfolio,
@@ -67,6 +69,10 @@ from backend.app.services.historical_shocks import list_historical_shocks, repla
 from backend.app.services.benchmark_comparison import list_benchmarks, compare_portfolio_to_benchmarks
 from backend.app.services.job_manager import get_scheduler_status, run_market_refresh_job, start_scheduler, stop_scheduler
 from backend.app.services.timeline_repository import list_timeline_points, save_timeline_point, timeline_point_to_dict
+from backend.app.services.alert_engine import check_alerts_for_portfolios
+from backend.app.services.alert_repository import alert_to_dict, delete_alert, list_alerts, mark_alert_read
+from backend.app.services.job_manager import run_alert_check_job
+from backend.app.services.portfolio_weight_engine import recalculate_weights_from_shares
 
 
 settings = get_settings()
@@ -606,3 +612,75 @@ def get_portfolio_risk_timeline(
     )
 
     return [timeline_point_to_dict(point) for point in points]
+
+
+
+@app.post("/alerts/check")
+def check_alerts(
+    request: AlertCheckRequest,
+    db: Session = Depends(get_db),
+) -> dict:
+    return check_alerts_for_portfolios(
+        db=db,
+        portfolio_id=request.portfolio_id,
+        risk_threshold=request.risk_threshold,
+        hidden_concentration_threshold=request.hidden_concentration_threshold,
+        volatility_threshold=request.volatility_threshold,
+        correlation_threshold=request.correlation_threshold,
+    )
+
+
+@app.get("/alerts")
+def get_alerts(
+    portfolio_id: int | None = None,
+    unread_only: bool = False,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    return [
+        alert_to_dict(alert)
+        for alert in list_alerts(
+            db=db,
+            portfolio_id=portfolio_id,
+            unread_only=unread_only,
+            limit=limit,
+        )
+    ]
+
+
+@app.post("/alerts/{alert_id}/read")
+def mark_alert_as_read(
+    alert_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    alert = mark_alert_read(db, alert_id)
+
+    if alert is None:
+        raise HTTPException(status_code=404, detail="Alert not found.")
+
+    return alert_to_dict(alert)
+
+
+@app.delete("/alerts/{alert_id}")
+def delete_alert_endpoint(
+    alert_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    deleted = delete_alert(db, alert_id)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Alert not found.")
+
+    return {"deleted": True, "alert_id": alert_id}
+
+
+@app.post("/jobs/run-alert-check")
+def run_alert_check_now() -> dict:
+    return run_alert_check_job()
+
+
+
+@app.post("/portfolio/recalculate-weights")
+def recalculate_portfolio_weights(request: LiveWeightRequest) -> dict:
+    result = recalculate_weights_from_shares(request)
+    return result.model_dump(mode="json")

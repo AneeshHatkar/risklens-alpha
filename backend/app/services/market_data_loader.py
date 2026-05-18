@@ -248,3 +248,45 @@ def load_portfolio_price_history(
 
 def today_iso() -> str:
     return date.today().isoformat()
+
+
+def get_latest_prices(
+    tickers: Iterable[str],
+    start: str = "2024-01-01",
+    use_cache: bool = True,
+    force_refresh: bool = False,
+) -> dict:
+    market_data = load_price_history(
+        tickers=tickers,
+        start=start,
+        use_cache=use_cache,
+        force_refresh=force_refresh,
+    )
+
+    prices = market_data.prices
+    latest_prices = {}
+
+    for ticker in normalize_tickers(tickers):
+        if ticker not in prices.columns or prices[ticker].dropna().empty:
+            latest_prices[ticker] = {
+                "available": False,
+                "latest_price": None,
+                "warning": "No usable price data found.",
+            }
+            continue
+
+        latest_prices[ticker] = {
+            "available": True,
+            "latest_price": round(float(prices[ticker].dropna().iloc[-1]), 4),
+            "warning": None,
+        }
+
+    return {
+        "prices": latest_prices,
+        "market_data": {
+            "missing_tickers": market_data.missing_tickers,
+            "warnings": market_data.warnings,
+            "used_cache": market_data.used_cache,
+            "cache_path": market_data.cache_path,
+        },
+    }

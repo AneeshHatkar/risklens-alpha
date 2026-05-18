@@ -46,6 +46,4 @@ reports/pdf/*.pdf
 risklens_alpha.db
 risklens_alpha.db-*
 
-# Local SQLite database
-risklens_alpha.db
-risklens_alpha.db-*
+

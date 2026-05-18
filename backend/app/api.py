@@ -52,6 +52,11 @@ from backend.app.services.watchlist_repository import (
     watchlist_item_to_dict,
 )
 from backend.app.services.scenario_generator import SCENARIOS
+from backend.app.services.factor_mapper import map_factors
+from backend.app.services.agent_debate import run_agent_debate
+from backend.app.services.risk_scoring import score_portfolio
+from backend.app.services.confidence_engine import calculate_confidence_interval
+from backend.app.services.hidden_concentration import calculate_hidden_concentration
 
 
 settings = get_settings()

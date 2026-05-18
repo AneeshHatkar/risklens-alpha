@@ -46,6 +46,20 @@ class AgentOpinion(BaseModel):
     uncertainty: Optional[str] = None
 
 
+
+
+
+class EvidenceItem(BaseModel):
+    evidence_type: str
+    claim: str
+    source: str
+    ticker: Optional[str] = None
+    factor: Optional[str] = None
+    value: Optional[float | int | str] = None
+    confidence: Optional[float] = None
+    details: Dict = {}
+
+
 class SimulationResult(BaseModel):
     portfolio_name: str
     scenario: ShockScenario
@@ -61,6 +75,7 @@ class SimulationResult(BaseModel):
     market_metrics: Optional[Dict] = None
     confidence_interval: Optional[Dict] = None
     hidden_concentration: Optional[Dict] = None
+    evidence_items: List[EvidenceItem] = []
 
 
 class SimulationRequest(BaseModel):

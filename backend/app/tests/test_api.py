@@ -156,3 +156,21 @@ def test_config_status_endpoint_is_safe():
     assert data["app_name"] == "RiskLens Alpha"
     assert "configured_optional_providers" in data
     assert "api_key" not in str(data).lower()
+
+
+def test_simulate_endpoint_includes_evidence_items():
+    response = client.post(
+        "/simulate",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "scenario_id": "ai_capex_slowdown",
+            "save_json": False,
+            "use_market_data": False,
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "evidence_items" in data
+    assert len(data["evidence_items"]) > 0

@@ -57,6 +57,7 @@ from backend.app.services.agent_debate import run_agent_debate
 from backend.app.services.risk_scoring import score_portfolio
 from backend.app.services.confidence_engine import calculate_confidence_interval
 from backend.app.services.hidden_concentration import calculate_hidden_concentration
+from backend.app.services.evidence_tracker import build_simulation_evidence
 
 
 settings = get_settings()
@@ -316,6 +317,16 @@ def simulate_database_portfolio(
         exposures=exposures,
     )
 
+    evidence_items = build_simulation_evidence(
+        portfolio=portfolio,
+        scenario=scenario,
+        exposures=exposures,
+        holding_risks=holding_risks,
+        agent_opinions=agent_opinions,
+        hidden_concentration=hidden_concentration,
+        market_metrics=market_metrics,
+    )
+
     summary = (
         f"The portfolio has a {risk_level} simulated vulnerability score of {score}/100 "
         f"under the '{scenario.name}' scenario. The dominant mapped risk themes are "
@@ -340,6 +351,7 @@ def simulate_database_portfolio(
         market_metrics=market_metrics,
         confidence_interval=confidence_interval,
         hidden_concentration=hidden_concentration,
+        evidence_items=evidence_items,
     )
 
     run = save_simulation_run(

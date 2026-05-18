@@ -7,6 +7,7 @@ from backend.app.config import get_settings
 from backend.app.schemas import SimulationResult
 from backend.app.services.agent_debate import run_agent_debate
 from backend.app.services.factor_mapper import map_factors
+from backend.app.services.evidence_tracker import build_simulation_evidence
 from backend.app.services.hidden_concentration import calculate_hidden_concentration
 from backend.app.services.market_metrics import compute_market_metrics
 from backend.app.services.confidence_engine import calculate_confidence_interval
@@ -108,6 +109,16 @@ def run_simulation(
         exposures=exposures,
     )
 
+    evidence_items = build_simulation_evidence(
+        portfolio=portfolio,
+        scenario=scenario,
+        exposures=exposures,
+        holding_risks=holding_risks,
+        agent_opinions=agent_opinions,
+        hidden_concentration=hidden_concentration,
+        market_metrics=market_metrics,
+    )
+
     summary = build_summary(
         score=score,
         risk_level=risk_level,
@@ -131,6 +142,7 @@ def run_simulation(
         market_metrics=market_metrics,
         confidence_interval=confidence_interval,
         hidden_concentration=hidden_concentration,
+        evidence_items=evidence_items,
     )
 
 
@@ -295,6 +307,12 @@ def print_result(result: SimulationResult) -> None:
         print(f"- {holding.ticker}: {holding.risk_score}/100 ({holding.risk_level})")
         for reason in holding.reasons:
             print(f"  • {reason}")
+
+    if result.evidence_items:
+        print("\n--- Evidence Summary ---")
+        print(f"Evidence items: {len(result.evidence_items)}")
+        evidence_types = sorted({item.evidence_type for item in result.evidence_items})
+        print("Evidence types:", ", ".join(evidence_types))
 
     print("\n--- Agent Debate ---")
     for agent in result.agent_opinions:

@@ -33,6 +33,7 @@ from backend.app.schemas import (
     AlertCheckRequest,
     LiveWeightRequest,
     NarrativeClassificationRequest,
+    NewsNarrativeExtractionRequest,
 )
 from backend.app.services.portfolio_repository import (
     create_portfolio,
@@ -75,6 +76,7 @@ from backend.app.services.alert_repository import alert_to_dict, delete_alert, l
 from backend.app.services.job_manager import run_alert_check_job
 from backend.app.services.portfolio_weight_engine import recalculate_weights_from_shares
 from backend.app.ml.narrative_classifier import load_model_metrics, predict_narrative
+from backend.app.services.news_narrative_extractor import extract_batch_news_narratives
 
 
 settings = get_settings()
@@ -705,5 +707,23 @@ def classify_news_narrative(request: NarrativeClassificationRequest) -> dict:
 def get_narrative_classifier_metrics() -> dict:
     try:
         return load_model_metrics()
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+
+@app.post("/news/extract-narratives")
+def extract_news_narratives(request: NewsNarrativeExtractionRequest) -> dict:
+    articles = [
+        article.model_dump(mode="json")
+        for article in request.articles
+    ]
+
+    try:
+        narratives = extract_batch_news_narratives(articles)
+        return {
+            "count": len(narratives),
+            "narratives": narratives,
+        }
     except FileNotFoundError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error

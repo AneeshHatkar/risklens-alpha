@@ -276,3 +276,26 @@ class NarrativeClassificationResult(BaseModel):
     confidence: float
     top_labels: List[Dict]
     model_path: str
+
+
+
+class NewsArticleInput(BaseModel):
+    title: str
+    summary: str = ""
+    tickers: List[str] = []
+
+
+class NewsNarrativeExtractionRequest(BaseModel):
+    articles: List[NewsArticleInput]
+
+
+class NewsNarrativeResult(BaseModel):
+    narrative: str
+    display_name: str
+    description: str
+    severity: float
+    confidence: float
+    affected_tickers: List[str]
+    affected_factors: List[str]
+    evidence: List[str]
+    classification: Dict

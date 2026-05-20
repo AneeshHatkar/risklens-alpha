@@ -365,3 +365,26 @@ def test_narrative_classifier_endpoint():
         assert "predicted_label" in data
         assert "confidence" in data
         assert "top_labels" in data
+
+
+def test_news_extract_narratives_endpoint():
+    response = client.post(
+        "/news/extract-narratives",
+        json={
+            "articles": [
+                {
+                    "title": "NVDA falls after China chip export restrictions",
+                    "summary": "Investors worry AI accelerator shipments could be limited.",
+                    "tickers": ["NVDA"]
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["count"] == 1
+    assert "narratives" in data
+    assert "narrative" in data["narratives"][0]
+    assert "affected_factors" in data["narratives"][0]

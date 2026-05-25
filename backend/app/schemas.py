@@ -306,3 +306,10 @@ class NewsNarrativeResult(BaseModel):
 class DynamicFactorUpdateRequest(BaseModel):
     articles: List[NewsArticleInput]
     tickers: List[str]
+
+
+
+class RiskCalibrationRequest(BaseModel):
+    portfolio_id: str = "ai_growth_sample"
+    scenario_id: str = "ai_capex_slowdown"
+    use_market_data: bool = True

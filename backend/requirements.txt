@@ -12,7 +12,7 @@ jinja2
 matplotlib
 httpx
 yfinance
-sqlalchemyplaywright
+sqlalchemy
 apscheduler
-scikit-learn
 joblib
+playwright

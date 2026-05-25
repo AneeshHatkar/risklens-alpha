@@ -35,6 +35,8 @@ from backend.app.schemas import (
     NarrativeClassificationRequest,
     NewsNarrativeExtractionRequest,
     DynamicFactorUpdateRequest,
+    RiskCalibrationRequest,
+    NewsAwareSimulationRequest,
 )
 from backend.app.services.portfolio_repository import (
     create_portfolio,
@@ -80,6 +82,8 @@ from backend.app.ml.narrative_classifier import load_model_metrics, predict_narr
 from backend.app.services.news_narrative_extractor import extract_batch_news_narratives
 from backend.app.services.dynamic_factor_updater import run_dynamic_factor_update
 from backend.app.services.agent_disagreement import calculate_agent_disagreement
+from backend.app.ml.risk_calibrator import load_risk_calibrator_metrics, predict_calibrated_risk_from_result
+from backend.app.services.news_aware_simulation import run_news_aware_simulation
 
 
 settings = get_settings()
@@ -750,3 +754,63 @@ def dynamic_factor_update(request: DynamicFactorUpdateRequest) -> dict:
         )
     except FileNotFoundError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+
+@app.post("/ml/risk-calibrate")
+def calibrate_risk_with_ml(request: RiskCalibrationRequest) -> dict:
+    try:
+        result = run_simulation(
+            portfolio_id=request.portfolio_id,
+            scenario_id=request.scenario_id,
+            use_market_data=request.use_market_data,
+        )
+
+        return predict_calibrated_risk_from_result(result)
+
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.get("/ml/risk-calibrator/metrics")
+def get_risk_calibrator_metrics() -> dict:
+    try:
+        return load_risk_calibrator_metrics()
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+
+@app.post("/simulate-with-news")
+def simulate_with_news(request: NewsAwareSimulationRequest) -> dict:
+    try:
+        raw_portfolios = load_all_sample_portfolios()
+
+        if request.portfolio_id not in raw_portfolios:
+            valid = ", ".join(raw_portfolios.keys())
+            raise ValueError(
+                f"Unknown portfolio_id '{request.portfolio_id}'. Valid options: {valid}"
+            )
+
+        portfolio = normalize_portfolio(raw_portfolios[request.portfolio_id])
+        scenario = get_scenario(request.scenario_id)
+
+        articles = [
+            article.model_dump(mode="json")
+            for article in request.articles
+        ]
+
+        return run_news_aware_simulation(
+            portfolio=portfolio,
+            scenario=scenario,
+            articles=articles,
+            use_market_data=request.use_market_data,
+            run_ml_calibration=request.run_ml_calibration,
+        )
+
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error

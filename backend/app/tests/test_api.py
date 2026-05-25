@@ -430,3 +430,60 @@ def test_simulate_endpoint_includes_agent_disagreement():
     assert "agent_disagreement" in data
     assert data["agent_disagreement"] is not None
     assert "score" in data["agent_disagreement"]
+
+
+def test_risk_calibrator_metrics_endpoint():
+    response = client.get("/ml/risk-calibrator/metrics")
+
+    assert response.status_code in {200, 503}
+
+    if response.status_code == 200:
+        data = response.json()
+        assert "score_model" in data
+        assert "level_model" in data
+
+
+def test_risk_calibrate_endpoint():
+    response = client.post(
+        "/ml/risk-calibrate",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "scenario_id": "ai_capex_slowdown",
+            "use_market_data": False
+        },
+    )
+
+    assert response.status_code in {200, 503}
+
+    if response.status_code == 200:
+        data = response.json()
+        assert "calibrated_score" in data
+        assert "calibrated_level" in data
+        assert "severe_probability" in data
+
+
+def test_simulate_with_news_endpoint():
+    response = client.post(
+        "/simulate-with-news",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "scenario_id": "ai_capex_slowdown",
+            "use_market_data": False,
+            "run_ml_calibration": False,
+            "articles": [
+                {
+                    "title": "NVDA falls after China chip export restrictions",
+                    "summary": "Investors worry AI accelerator shipments could be limited.",
+                    "tickers": ["NVDA"]
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["news_adjusted"] is True
+    assert "result" in data
+    assert "dynamic_factor_update" in data
+    assert data["dynamic_factor_update"]["narrative_count"] == 1

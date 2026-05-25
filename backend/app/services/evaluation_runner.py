@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from backend.app.main import run_simulation
+from backend.app.services.ml_evaluation import run_ml_evaluation_suite
 
 
 FORBIDDEN_ADVICE_PHRASES = [

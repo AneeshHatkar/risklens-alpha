@@ -84,6 +84,7 @@ from backend.app.services.dynamic_factor_updater import run_dynamic_factor_updat
 from backend.app.services.agent_disagreement import calculate_agent_disagreement
 from backend.app.ml.risk_calibrator import load_risk_calibrator_metrics, predict_calibrated_risk_from_result
 from backend.app.services.news_aware_simulation import run_news_aware_simulation
+from backend.app.services.ml_evaluation import run_ml_evaluation_suite
 
 
 settings = get_settings()
@@ -814,3 +815,9 @@ def simulate_with_news(request: NewsAwareSimulationRequest) -> dict:
         raise HTTPException(status_code=503, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+
+@app.get("/ml/evaluate")
+def evaluate_ml_system() -> dict:
+    return run_ml_evaluation_suite()

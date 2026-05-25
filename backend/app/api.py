@@ -37,6 +37,8 @@ from backend.app.schemas import (
     DynamicFactorUpdateRequest,
     RiskCalibrationRequest,
     NewsAwareSimulationRequest,
+    LiveNewsRequest,
+    LiveNewsSimulationRequest,
 )
 from backend.app.services.portfolio_repository import (
     create_portfolio,
@@ -86,6 +88,7 @@ from backend.app.ml.risk_calibrator import load_risk_calibrator_metrics, predict
 from backend.app.services.news_aware_simulation import run_news_aware_simulation
 from backend.app.services.ml_evaluation import run_ml_evaluation_suite
 from backend.app.ml.risk_anomaly_detector import detect_risk_timeline_anomalies
+from backend.app.services.live_news import fetch_live_market_news_safe
 
 
 settings = get_settings()
@@ -847,3 +850,54 @@ def get_portfolio_timeline_anomalies(
     point_dicts = [timeline_point_to_dict(point) for point in points]
 
     return detect_risk_timeline_anomalies(point_dicts)
+
+
+
+@app.post("/news/live")
+def fetch_live_news(request: LiveNewsRequest) -> dict:
+    return fetch_live_market_news_safe(
+        tickers=request.tickers,
+        query=request.query,
+        max_articles=request.max_articles,
+    )
+
+
+@app.post("/simulate-with-live-news")
+def simulate_with_live_news(request: LiveNewsSimulationRequest) -> dict:
+    try:
+        raw_portfolios = load_all_sample_portfolios()
+
+        if request.portfolio_id not in raw_portfolios:
+            valid = ", ".join(raw_portfolios.keys())
+            raise ValueError(
+                f"Unknown portfolio_id '{request.portfolio_id}'. Valid options: {valid}"
+            )
+
+        portfolio = normalize_portfolio(raw_portfolios[request.portfolio_id])
+        scenario = get_scenario(request.scenario_id)
+
+        request_tickers = request.tickers or [holding.ticker for holding in portfolio.holdings]
+
+        live_news = fetch_live_market_news_safe(
+            tickers=request_tickers,
+            query=request.query,
+            max_articles=request.max_articles,
+        )
+
+        output = run_news_aware_simulation(
+            portfolio=portfolio,
+            scenario=scenario,
+            articles=live_news["articles"],
+            use_market_data=request.use_market_data,
+            run_ml_calibration=request.run_ml_calibration,
+        )
+
+        output["live_news"] = live_news
+        output["live_market_data_enabled"] = request.use_market_data
+
+        return output
+
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error

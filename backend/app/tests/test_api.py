@@ -514,3 +514,44 @@ def test_simulate_with_news_endpoint():
     assert "result" in data
     assert "dynamic_factor_update" in data
     assert data["dynamic_factor_update"]["narrative_count"] == 1
+
+
+def test_live_news_endpoint():
+    response = client.post(
+        "/news/live",
+        json={
+            "tickers": ["NVDA"],
+            "query": "AI",
+            "max_articles": 2
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "articles" in data
+    assert "article_count" in data
+    assert data["article_count"] >= 1
+
+
+def test_simulate_with_live_news_endpoint():
+    response = client.post(
+        "/simulate-with-live-news",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "scenario_id": "ai_capex_slowdown",
+            "tickers": ["NVDA", "MSFT"],
+            "query": "AI",
+            "max_articles": 2,
+            "use_market_data": False,
+            "run_ml_calibration": True
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["news_adjusted"] is True
+    assert "live_news" in data
+    assert "result" in data
+    assert data["live_news"]["article_count"] >= 1

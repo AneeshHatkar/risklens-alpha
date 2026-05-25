@@ -322,3 +322,20 @@ class NewsAwareSimulationRequest(BaseModel):
     articles: List[NewsArticleInput]
     use_market_data: bool = True
     run_ml_calibration: bool = True
+
+
+
+class LiveNewsRequest(BaseModel):
+    tickers: List[str]
+    query: Optional[str] = None
+    max_articles: int = 10
+
+
+class LiveNewsSimulationRequest(BaseModel):
+    portfolio_id: str = "ai_growth_sample"
+    scenario_id: str = "ai_capex_slowdown"
+    tickers: List[str] = []
+    query: Optional[str] = None
+    max_articles: int = 10
+    use_market_data: bool = True
+    run_ml_calibration: bool = True

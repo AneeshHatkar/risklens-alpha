@@ -388,3 +388,26 @@ def test_news_extract_narratives_endpoint():
     assert "narratives" in data
     assert "narrative" in data["narratives"][0]
     assert "affected_factors" in data["narratives"][0]
+
+
+def test_dynamic_factor_update_endpoint():
+    response = client.post(
+        "/factors/dynamic-update",
+        json={
+            "articles": [
+                {
+                    "title": "NVDA falls after China chip export restrictions",
+                    "summary": "Investors worry AI accelerator shipments could be limited.",
+                    "tickers": ["NVDA"]
+                }
+            ],
+            "tickers": ["NVDA", "AMD"]
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["narrative_count"] == 1
+    assert "ticker_updates" in data
+    assert "NVDA" in data["ticker_updates"]

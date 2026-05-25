@@ -299,3 +299,9 @@ class NewsNarrativeResult(BaseModel):
     affected_factors: List[str]
     evidence: List[str]
     classification: Dict
+
+
+
+class DynamicFactorUpdateRequest(BaseModel):
+    articles: List[NewsArticleInput]
+    tickers: List[str]

@@ -6,6 +6,7 @@ from backend.app.config import get_settings
 
 from backend.app.schemas import SimulationResult
 from backend.app.services.agent_debate import run_agent_debate
+from backend.app.services.agent_disagreement import calculate_agent_disagreement
 from backend.app.services.factor_mapper import map_factors
 from backend.app.services.evidence_tracker import build_simulation_evidence
 from backend.app.services.hidden_concentration import calculate_hidden_concentration
@@ -119,6 +120,8 @@ def run_simulation(
         market_metrics=market_metrics,
     )
 
+    agent_disagreement = calculate_agent_disagreement(agent_opinions)
+
     summary = build_summary(
         score=score,
         risk_level=risk_level,
@@ -143,6 +146,7 @@ def run_simulation(
         confidence_interval=confidence_interval,
         hidden_concentration=hidden_concentration,
         evidence_items=evidence_items,
+        agent_disagreement=agent_disagreement,
     )
 
 
@@ -313,6 +317,11 @@ def print_result(result: SimulationResult) -> None:
         print(f"Evidence items: {len(result.evidence_items)}")
         evidence_types = sorted({item.evidence_type for item in result.evidence_items})
         print("Evidence types:", ", ".join(evidence_types))
+
+    if result.agent_disagreement:
+        print("\n--- Agent Disagreement ---")
+        print(f"Score: {result.agent_disagreement['score']}/100 ({result.agent_disagreement['label']})")
+        print(result.agent_disagreement["summary"])
 
     print("\n--- Agent Debate ---")
     for agent in result.agent_opinions:

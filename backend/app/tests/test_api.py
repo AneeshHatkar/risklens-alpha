@@ -365,3 +365,68 @@ def test_narrative_classifier_endpoint():
         assert "predicted_label" in data
         assert "confidence" in data
         assert "top_labels" in data
+
+
+def test_news_extract_narratives_endpoint():
+    response = client.post(
+        "/news/extract-narratives",
+        json={
+            "articles": [
+                {
+                    "title": "NVDA falls after China chip export restrictions",
+                    "summary": "Investors worry AI accelerator shipments could be limited.",
+                    "tickers": ["NVDA"]
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["count"] == 1
+    assert "narratives" in data
+    assert "narrative" in data["narratives"][0]
+    assert "affected_factors" in data["narratives"][0]
+
+
+def test_dynamic_factor_update_endpoint():
+    response = client.post(
+        "/factors/dynamic-update",
+        json={
+            "articles": [
+                {
+                    "title": "NVDA falls after China chip export restrictions",
+                    "summary": "Investors worry AI accelerator shipments could be limited.",
+                    "tickers": ["NVDA"]
+                }
+            ],
+            "tickers": ["NVDA", "AMD"]
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["narrative_count"] == 1
+    assert "ticker_updates" in data
+    assert "NVDA" in data["ticker_updates"]
+
+
+def test_simulate_endpoint_includes_agent_disagreement():
+    response = client.post(
+        "/simulate",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "scenario_id": "ai_capex_slowdown",
+            "save_json": False,
+            "use_market_data": False,
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "agent_disagreement" in data
+    assert data["agent_disagreement"] is not None
+    assert "score" in data["agent_disagreement"]

@@ -50,3 +50,6 @@ risklens_alpha.db-*
 
 # Generated PDF reports
 reports/pdf/*.pdf
+
+# ML model artifacts
+outputs/models/*.joblib

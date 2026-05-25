@@ -1,0 +1,66 @@
+{
+  "ai_capex_slowdown": {
+    "display_name": "AI Capex Slowdown",
+    "description": "Risk that AI infrastructure spending, data-center buildout, or GPU demand slows versus expectations.",
+    "affected_factors": ["AI infrastructure", "semiconductors", "cloud growth", "valuation multiples"],
+    "default_tickers": ["NVDA", "AMD", "SMH", "MSFT", "GOOGL", "AMZN"],
+    "severity_keywords": ["slow", "delay", "capex", "spending", "orders", "demand", "monetization", "data center", "gpu"],
+    "base_severity": 0.70
+  },
+  "higher_for_longer_rates": {
+    "display_name": "Higher-for-Longer Rates",
+    "description": "Risk that interest rates remain elevated, pressuring valuation multiples and rate-sensitive assets.",
+    "affected_factors": ["interest rates", "valuation multiples", "growth stocks", "market beta"],
+    "default_tickers": ["QQQ", "SPY", "XLK", "MSFT", "AAPL", "NVDA"],
+    "severity_keywords": ["rates", "yields", "inflation", "fed", "hawkish", "policy", "treasury", "cuts"],
+    "base_severity": 0.68
+  },
+  "cloud_growth_deceleration": {
+    "display_name": "Cloud Growth Deceleration",
+    "description": "Risk that cloud infrastructure or enterprise software growth slows due to customer optimization or weaker IT spending.",
+    "affected_factors": ["cloud growth", "enterprise IT spend", "AI software monetization", "valuation multiples"],
+    "default_tickers": ["MSFT", "AMZN", "GOOGL", "CRM", "NOW"],
+    "severity_keywords": ["cloud", "optimization", "enterprise", "software", "it spend", "contracts", "migration", "guidance"],
+    "base_severity": 0.65
+  },
+  "semiconductor_export_restriction": {
+    "display_name": "Semiconductor Export Restriction",
+    "description": "Risk that export restrictions, geopolitics, or China exposure pressures semiconductor revenue and supply chains.",
+    "affected_factors": ["semiconductors", "China exposure", "hardware supply chain", "geopolitical risk"],
+    "default_tickers": ["NVDA", "AMD", "SMH", "ASML", "TSM"],
+    "severity_keywords": ["export", "restriction", "china", "controls", "license", "geopolitical", "chip", "semiconductor"],
+    "base_severity": 0.78
+  },
+  "consumer_demand_weakness": {
+    "display_name": "Consumer Demand Weakness",
+    "description": "Risk that household spending, discretionary purchases, or consumer electronics demand weakens.",
+    "affected_factors": ["consumer demand", "hardware cycle", "market beta", "valuation multiples"],
+    "default_tickers": ["AAPL", "AMZN", "TSLA", "XLY", "SPY"],
+    "severity_keywords": ["consumer", "retail", "demand", "spending", "household", "smartphone", "electronics", "discretionary"],
+    "base_severity": 0.60
+  },
+  "banking_stress": {
+    "display_name": "Banking Stress",
+    "description": "Risk that banks or credit markets experience funding, liquidity, or balance-sheet stress.",
+    "affected_factors": ["financial stress", "liquidity conditions", "credit risk", "market beta"],
+    "default_tickers": ["KRE", "XLF", "SPY", "IWM"],
+    "severity_keywords": ["bank", "deposit", "credit", "liquidity", "funding", "regional", "lender", "stress"],
+    "base_severity": 0.72
+  },
+  "oil_inflation_shock": {
+    "display_name": "Oil / Inflation Shock",
+    "description": "Risk that rising oil, commodity, or inflation pressure hurts margins, consumers, and rate expectations.",
+    "affected_factors": ["inflation pressure", "oil shock", "interest rates", "consumer demand"],
+    "default_tickers": ["XLE", "SPY", "QQQ", "XLY"],
+    "severity_keywords": ["oil", "energy", "commodity", "inflation", "fuel", "crude", "supply", "prices"],
+    "base_severity": 0.66
+  },
+  "broad_market_risk_off": {
+    "display_name": "Broad Market Risk-Off",
+    "description": "Risk that broad equity markets decline due to deteriorating risk appetite, volatility, or macro uncertainty.",
+    "affected_factors": ["market beta", "volatility expansion", "liquidity conditions", "correlation spike"],
+    "default_tickers": ["SPY", "QQQ", "VTI", "IWM"],
+    "severity_keywords": ["risk-off", "volatility", "selloff", "uncertainty", "defensive", "decline", "broad", "safety"],
+    "base_severity": 0.64
+  }
+}

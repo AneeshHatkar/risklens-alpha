@@ -76,6 +76,7 @@ class SimulationResult(BaseModel):
     confidence_interval: Optional[Dict] = None
     hidden_concentration: Optional[Dict] = None
     evidence_items: List[EvidenceItem] = []
+    agent_disagreement: Optional[Dict] = None
 
 
 class SimulationRequest(BaseModel):
@@ -276,3 +277,32 @@ class NarrativeClassificationResult(BaseModel):
     confidence: float
     top_labels: List[Dict]
     model_path: str
+
+
+
+class NewsArticleInput(BaseModel):
+    title: str
+    summary: str = ""
+    tickers: List[str] = []
+
+
+class NewsNarrativeExtractionRequest(BaseModel):
+    articles: List[NewsArticleInput]
+
+
+class NewsNarrativeResult(BaseModel):
+    narrative: str
+    display_name: str
+    description: str
+    severity: float
+    confidence: float
+    affected_tickers: List[str]
+    affected_factors: List[str]
+    evidence: List[str]
+    classification: Dict
+
+
+
+class DynamicFactorUpdateRequest(BaseModel):
+    articles: List[NewsArticleInput]
+    tickers: List[str]

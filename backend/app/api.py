@@ -33,6 +33,8 @@ from backend.app.schemas import (
     AlertCheckRequest,
     LiveWeightRequest,
     NarrativeClassificationRequest,
+    NewsNarrativeExtractionRequest,
+    DynamicFactorUpdateRequest,
 )
 from backend.app.services.portfolio_repository import (
     create_portfolio,
@@ -75,6 +77,9 @@ from backend.app.services.alert_repository import alert_to_dict, delete_alert, l
 from backend.app.services.job_manager import run_alert_check_job
 from backend.app.services.portfolio_weight_engine import recalculate_weights_from_shares
 from backend.app.ml.narrative_classifier import load_model_metrics, predict_narrative
+from backend.app.services.news_narrative_extractor import extract_batch_news_narratives
+from backend.app.services.dynamic_factor_updater import run_dynamic_factor_update
+from backend.app.services.agent_disagreement import calculate_agent_disagreement
 
 
 settings = get_settings()
@@ -344,6 +349,8 @@ def simulate_database_portfolio(
         market_metrics=market_metrics,
     )
 
+    agent_disagreement = calculate_agent_disagreement(agent_opinions)
+
     summary = (
         f"The portfolio has a {risk_level} simulated vulnerability score of {score}/100 "
         f"under the '{scenario.name}' scenario. The dominant mapped risk themes are "
@@ -369,6 +376,7 @@ def simulate_database_portfolio(
         confidence_interval=confidence_interval,
         hidden_concentration=hidden_concentration,
         evidence_items=evidence_items,
+        agent_disagreement=agent_disagreement,
     )
 
     run = save_simulation_run(
@@ -705,5 +713,40 @@ def classify_news_narrative(request: NarrativeClassificationRequest) -> dict:
 def get_narrative_classifier_metrics() -> dict:
     try:
         return load_model_metrics()
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+
+@app.post("/news/extract-narratives")
+def extract_news_narratives(request: NewsNarrativeExtractionRequest) -> dict:
+    articles = [
+        article.model_dump(mode="json")
+        for article in request.articles
+    ]
+
+    try:
+        narratives = extract_batch_news_narratives(articles)
+        return {
+            "count": len(narratives),
+            "narratives": narratives,
+        }
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+
+@app.post("/factors/dynamic-update")
+def dynamic_factor_update(request: DynamicFactorUpdateRequest) -> dict:
+    articles = [
+        article.model_dump(mode="json")
+        for article in request.articles
+    ]
+
+    try:
+        return run_dynamic_factor_update(
+            articles=articles,
+            tickers=request.tickers,
+        )
     except FileNotFoundError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error

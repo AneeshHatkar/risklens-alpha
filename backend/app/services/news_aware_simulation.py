@@ -18,7 +18,6 @@ def apply_dynamic_updates_to_exposures(
     dynamic_update: dict,
 ) -> list[FactorExposure]:
     updated = []
-
     update_lookup = {}
 
     for ticker, ticker_updates in dynamic_update.get("ticker_updates", {}).items():
@@ -60,7 +59,6 @@ def apply_dynamic_updates_to_exposures(
             )
         )
 
-    # Add dynamic-only factor exposures that were not in the base map.
     existing_keys = {(item.ticker, item.factor) for item in updated}
 
     for ticker, ticker_updates in dynamic_update.get("ticker_updates", {}).items():

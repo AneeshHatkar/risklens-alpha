@@ -313,3 +313,12 @@ class RiskCalibrationRequest(BaseModel):
     portfolio_id: str = "ai_growth_sample"
     scenario_id: str = "ai_capex_slowdown"
     use_market_data: bool = True
+
+
+
+class NewsAwareSimulationRequest(BaseModel):
+    portfolio_id: str = "ai_growth_sample"
+    scenario_id: str = "ai_capex_slowdown"
+    articles: List[NewsArticleInput]
+    use_market_data: bool = True
+    run_ml_calibration: bool = True

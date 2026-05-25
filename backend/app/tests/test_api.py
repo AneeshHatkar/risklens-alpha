@@ -487,3 +487,30 @@ def test_simulate_with_news_endpoint():
     assert "result" in data
     assert "dynamic_factor_update" in data
     assert data["dynamic_factor_update"]["narrative_count"] == 1
+
+
+def test_simulate_with_news_endpoint():
+    response = client.post(
+        "/simulate-with-news",
+        json={
+            "portfolio_id": "ai_growth_sample",
+            "scenario_id": "ai_capex_slowdown",
+            "use_market_data": False,
+            "run_ml_calibration": False,
+            "articles": [
+                {
+                    "title": "NVDA falls after China chip export restrictions",
+                    "summary": "Investors worry AI accelerator shipments could be limited.",
+                    "tickers": ["NVDA"]
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["news_adjusted"] is True
+    assert "result" in data
+    assert "dynamic_factor_update" in data
+    assert data["dynamic_factor_update"]["narrative_count"] == 1

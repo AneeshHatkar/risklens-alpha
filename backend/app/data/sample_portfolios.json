@@ -2,28 +2,414 @@
   "ai_growth_sample": {
     "name": "AI Growth Sample Portfolio",
     "holdings": [
-      {"ticker": "NVDA", "weight": 0.35},
-      {"ticker": "MSFT", "weight": 0.25},
-      {"ticker": "AAPL", "weight": 0.20},
-      {"ticker": "SPY", "weight": 0.20}
+      {
+        "ticker": "NVDA",
+        "weight": 0.35
+      },
+      {
+        "ticker": "MSFT",
+        "weight": 0.25
+      },
+      {
+        "ticker": "AAPL",
+        "weight": 0.2
+      },
+      {
+        "ticker": "SPY",
+        "weight": 0.2
+      }
     ]
   },
-  "balanced_tech_sample": {
-    "name": "Balanced Technology Sample Portfolio",
+  "ai_mega_cap_growth": {
+    "name": "AI Mega-Cap Growth Portfolio",
     "holdings": [
-      {"ticker": "AAPL", "weight": 0.25},
-      {"ticker": "MSFT", "weight": 0.25},
-      {"ticker": "QQQ", "weight": 0.25},
-      {"ticker": "SPY", "weight": 0.25}
+      {
+        "ticker": "NVDA",
+        "weight": 0.3
+      },
+      {
+        "ticker": "MSFT",
+        "weight": 0.22
+      },
+      {
+        "ticker": "GOOGL",
+        "weight": 0.16
+      },
+      {
+        "ticker": "AMZN",
+        "weight": 0.14
+      },
+      {
+        "ticker": "META",
+        "weight": 0.1
+      },
+      {
+        "ticker": "AAPL",
+        "weight": 0.08
+      }
+    ]
+  },
+  "semiconductor_supply_chain": {
+    "name": "Semiconductor Supply Chain Portfolio",
+    "holdings": [
+      {
+        "ticker": "NVDA",
+        "weight": 0.25
+      },
+      {
+        "ticker": "AMD",
+        "weight": 0.18
+      },
+      {
+        "ticker": "TSM",
+        "weight": 0.16
+      },
+      {
+        "ticker": "ASML",
+        "weight": 0.14
+      },
+      {
+        "ticker": "SMH",
+        "weight": 0.12
+      },
+      {
+        "ticker": "QCOM",
+        "weight": 0.08
+      },
+      {
+        "ticker": "AVGO",
+        "weight": 0.07
+      }
+    ]
+  },
+  "cloud_saas_growth": {
+    "name": "Cloud and SaaS Growth Portfolio",
+    "holdings": [
+      {
+        "ticker": "MSFT",
+        "weight": 0.24
+      },
+      {
+        "ticker": "AMZN",
+        "weight": 0.2
+      },
+      {
+        "ticker": "GOOGL",
+        "weight": 0.18
+      },
+      {
+        "ticker": "CRM",
+        "weight": 0.12
+      },
+      {
+        "ticker": "NOW",
+        "weight": 0.1
+      },
+      {
+        "ticker": "ADBE",
+        "weight": 0.08
+      },
+      {
+        "ticker": "QQQ",
+        "weight": 0.08
+      }
+    ]
+  },
+  "higher_for_longer_stress": {
+    "name": "Higher-for-Longer Stress Portfolio",
+    "holdings": [
+      {
+        "ticker": "QQQ",
+        "weight": 0.28
+      },
+      {
+        "ticker": "TLT",
+        "weight": 0.2
+      },
+      {
+        "ticker": "NVDA",
+        "weight": 0.16
+      },
+      {
+        "ticker": "MSFT",
+        "weight": 0.12
+      },
+      {
+        "ticker": "ARKK",
+        "weight": 0.1
+      },
+      {
+        "ticker": "JPM",
+        "weight": 0.08
+      },
+      {
+        "ticker": "GLD",
+        "weight": 0.06
+      }
+    ]
+  },
+  "consumer_weakness": {
+    "name": "Consumer Weakness Portfolio",
+    "holdings": [
+      {
+        "ticker": "AMZN",
+        "weight": 0.22
+      },
+      {
+        "ticker": "TSLA",
+        "weight": 0.18
+      },
+      {
+        "ticker": "HD",
+        "weight": 0.14
+      },
+      {
+        "ticker": "NKE",
+        "weight": 0.12
+      },
+      {
+        "ticker": "SBUX",
+        "weight": 0.1
+      },
+      {
+        "ticker": "WMT",
+        "weight": 0.1
+      },
+      {
+        "ticker": "COST",
+        "weight": 0.08
+      },
+      {
+        "ticker": "SPY",
+        "weight": 0.06
+      }
+    ]
+  },
+  "defensive_recession": {
+    "name": "Defensive Recession Portfolio",
+    "holdings": [
+      {
+        "ticker": "XLU",
+        "weight": 0.2
+      },
+      {
+        "ticker": "XLV",
+        "weight": 0.18
+      },
+      {
+        "ticker": "WMT",
+        "weight": 0.15
+      },
+      {
+        "ticker": "COST",
+        "weight": 0.12
+      },
+      {
+        "ticker": "GLD",
+        "weight": 0.12
+      },
+      {
+        "ticker": "TLT",
+        "weight": 0.1
+      },
+      {
+        "ticker": "PG",
+        "weight": 0.08
+      },
+      {
+        "ticker": "SPY",
+        "weight": 0.05
+      }
+    ]
+  },
+  "banking_stress": {
+    "name": "Banking Stress Portfolio",
+    "holdings": [
+      {
+        "ticker": "JPM",
+        "weight": 0.24
+      },
+      {
+        "ticker": "BAC",
+        "weight": 0.18
+      },
+      {
+        "ticker": "WFC",
+        "weight": 0.14
+      },
+      {
+        "ticker": "KRE",
+        "weight": 0.14
+      },
+      {
+        "ticker": "SCHW",
+        "weight": 0.1
+      },
+      {
+        "ticker": "TLT",
+        "weight": 0.1
+      },
+      {
+        "ticker": "SPY",
+        "weight": 0.1
+      }
+    ]
+  },
+  "energy_inflation_hedge": {
+    "name": "Energy and Inflation Hedge Portfolio",
+    "holdings": [
+      {
+        "ticker": "XLE",
+        "weight": 0.26
+      },
+      {
+        "ticker": "CVX",
+        "weight": 0.18
+      },
+      {
+        "ticker": "XOM",
+        "weight": 0.18
+      },
+      {
+        "ticker": "GLD",
+        "weight": 0.12
+      },
+      {
+        "ticker": "DBC",
+        "weight": 0.1
+      },
+      {
+        "ticker": "SPY",
+        "weight": 0.08
+      },
+      {
+        "ticker": "TLT",
+        "weight": 0.08
+      }
+    ]
+  },
+  "global_macro_etf": {
+    "name": "Global Macro ETF Portfolio",
+    "holdings": [
+      {
+        "ticker": "SPY",
+        "weight": 0.28
+      },
+      {
+        "ticker": "QQQ",
+        "weight": 0.18
+      },
+      {
+        "ticker": "VEA",
+        "weight": 0.14
+      },
+      {
+        "ticker": "EEM",
+        "weight": 0.12
+      },
+      {
+        "ticker": "TLT",
+        "weight": 0.1
+      },
+      {
+        "ticker": "GLD",
+        "weight": 0.08
+      },
+      {
+        "ticker": "XLE",
+        "weight": 0.05
+      },
+      {
+        "ticker": "XLU",
+        "weight": 0.05
+      }
+    ]
+  },
+  "china_geopolitical_exposure": {
+    "name": "China Geopolitical Exposure Portfolio",
+    "holdings": [
+      {
+        "ticker": "AAPL",
+        "weight": 0.22
+      },
+      {
+        "ticker": "TSM",
+        "weight": 0.18
+      },
+      {
+        "ticker": "NVDA",
+        "weight": 0.18
+      },
+      {
+        "ticker": "AMD",
+        "weight": 0.12
+      },
+      {
+        "ticker": "ASML",
+        "weight": 0.1
+      },
+      {
+        "ticker": "BABA",
+        "weight": 0.08
+      },
+      {
+        "ticker": "EEM",
+        "weight": 0.07
+      },
+      {
+        "ticker": "GLD",
+        "weight": 0.05
+      }
     ]
   },
   "semiconductor_sample": {
-    "name": "Semiconductor Concentration Sample Portfolio",
+    "name": "Semiconductor Sample Portfolio",
     "holdings": [
-      {"ticker": "NVDA", "weight": 0.40},
-      {"ticker": "SMH", "weight": 0.35},
-      {"ticker": "MSFT", "weight": 0.15},
-      {"ticker": "SPY", "weight": 0.10}
+      {
+        "ticker": "NVDA",
+        "weight": 0.35
+      },
+      {
+        "ticker": "AMD",
+        "weight": 0.25
+      },
+      {
+        "ticker": "TSM",
+        "weight": 0.15
+      },
+      {
+        "ticker": "SMH",
+        "weight": 0.15
+      },
+      {
+        "ticker": "SPY",
+        "weight": 0.1
+      }
+    ]
+  },
+  "balanced_tech_sample": {
+    "name": "Balanced Tech Sample Portfolio",
+    "holdings": [
+      {
+        "ticker": "MSFT",
+        "weight": 0.25
+      },
+      {
+        "ticker": "AAPL",
+        "weight": 0.25
+      },
+      {
+        "ticker": "GOOGL",
+        "weight": 0.2
+      },
+      {
+        "ticker": "AMZN",
+        "weight": 0.15
+      },
+      {
+        "ticker": "SPY",
+        "weight": 0.15
+      }
     ]
   }
 }

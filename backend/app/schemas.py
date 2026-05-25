@@ -76,6 +76,7 @@ class SimulationResult(BaseModel):
     confidence_interval: Optional[Dict] = None
     hidden_concentration: Optional[Dict] = None
     evidence_items: List[EvidenceItem] = []
+    agent_disagreement: Optional[Dict] = None
 
 
 class SimulationRequest(BaseModel):

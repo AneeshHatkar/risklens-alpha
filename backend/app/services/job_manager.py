@@ -58,6 +58,7 @@ def refresh_saved_portfolio_risk_timelines(db: Session | None = None) -> dict:
 def run_database_portfolio_simulation_for_job(portfolio_model, scenario_id: str):
     # Reuse the core simulation components without needing portfolio_id from sample JSON.
     from backend.app.services.agent_debate import run_agent_debate
+    from backend.app.services.agent_disagreement import calculate_agent_disagreement
     from backend.app.services.confidence_engine import calculate_confidence_interval
     from backend.app.services.evidence_tracker import build_simulation_evidence
     from backend.app.services.factor_mapper import map_factors
@@ -120,6 +121,8 @@ def run_database_portfolio_simulation_for_job(portfolio_model, scenario_id: str)
         market_metrics=market_metrics,
     )
 
+    agent_disagreement = calculate_agent_disagreement(agents)
+
     summary = (
         f"The portfolio has a {level} simulated vulnerability score of {score}/100 "
         f"under the '{scenario.name}' scenario."
@@ -144,6 +147,7 @@ def run_database_portfolio_simulation_for_job(portfolio_model, scenario_id: str)
         confidence_interval=confidence_interval,
         hidden_concentration=hidden_concentration,
         evidence_items=evidence_items,
+        agent_disagreement=agent_disagreement,
     )
 
 

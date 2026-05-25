@@ -79,6 +79,7 @@ from backend.app.services.portfolio_weight_engine import recalculate_weights_fro
 from backend.app.ml.narrative_classifier import load_model_metrics, predict_narrative
 from backend.app.services.news_narrative_extractor import extract_batch_news_narratives
 from backend.app.services.dynamic_factor_updater import run_dynamic_factor_update
+from backend.app.services.agent_disagreement import calculate_agent_disagreement
 
 
 settings = get_settings()
@@ -348,6 +349,8 @@ def simulate_database_portfolio(
         market_metrics=market_metrics,
     )
 
+    agent_disagreement = calculate_agent_disagreement(agent_opinions)
+
     summary = (
         f"The portfolio has a {risk_level} simulated vulnerability score of {score}/100 "
         f"under the '{scenario.name}' scenario. The dominant mapped risk themes are "
@@ -373,6 +376,7 @@ def simulate_database_portfolio(
         confidence_interval=confidence_interval,
         hidden_concentration=hidden_concentration,
         evidence_items=evidence_items,
+        agent_disagreement=agent_disagreement,
     )
 
     run = save_simulation_run(

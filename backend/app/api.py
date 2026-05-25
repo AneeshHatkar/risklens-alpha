@@ -39,6 +39,7 @@ from backend.app.schemas import (
     NewsAwareSimulationRequest,
     LiveNewsRequest,
     LiveNewsSimulationRequest,
+    CustomLiveNewsSimulationRequest,
 )
 from backend.app.services.portfolio_repository import (
     create_portfolio,
@@ -89,6 +90,7 @@ from backend.app.services.news_aware_simulation import run_news_aware_simulation
 from backend.app.services.ml_evaluation import run_ml_evaluation_suite
 from backend.app.ml.risk_anomaly_detector import detect_risk_timeline_anomalies
 from backend.app.services.live_news import fetch_live_market_news_safe
+from backend.app.services.custom_portfolio_builder import build_custom_portfolio
 
 
 settings = get_settings()
@@ -893,6 +895,49 @@ def simulate_with_live_news(request: LiveNewsSimulationRequest) -> dict:
         )
 
         output["live_news"] = live_news
+        output["live_market_data_enabled"] = request.use_market_data
+
+        return output
+
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+
+@app.post("/simulate-custom-live-news")
+def simulate_custom_portfolio_with_live_news(request: CustomLiveNewsSimulationRequest) -> dict:
+    try:
+        portfolio = build_custom_portfolio(
+            name=request.portfolio_name,
+            holdings=[
+                holding.model_dump(mode="json")
+                for holding in request.holdings
+            ],
+        )
+
+        scenario = get_scenario(request.scenario_id)
+
+        portfolio_tickers = [holding.ticker for holding in portfolio.holdings]
+        request_tickers = request.news_tickers or portfolio_tickers
+
+        live_news = fetch_live_market_news_safe(
+            tickers=request_tickers,
+            query=request.query,
+            max_articles=request.max_articles,
+        )
+
+        output = run_news_aware_simulation(
+            portfolio=portfolio,
+            scenario=scenario,
+            articles=live_news["articles"],
+            use_market_data=request.use_market_data,
+            run_ml_calibration=request.run_ml_calibration,
+        )
+
+        output["live_news"] = live_news
+        output["custom_portfolio"] = True
         output["live_market_data_enabled"] = request.use_market_data
 
         return output

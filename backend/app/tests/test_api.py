@@ -555,3 +555,32 @@ def test_simulate_with_live_news_endpoint():
     assert "live_news" in data
     assert "result" in data
     assert data["live_news"]["article_count"] >= 1
+
+
+def test_simulate_custom_live_news_endpoint():
+    response = client.post(
+        "/simulate-custom-live-news",
+        json={
+            "portfolio_name": "Custom Test Portfolio",
+            "holdings": [
+                {"ticker": "NVDA", "weight": 0.5},
+                {"ticker": "MSFT", "weight": 0.3},
+                {"ticker": "SPY", "weight": 0.2}
+            ],
+            "scenario_id": "ai_capex_slowdown",
+            "news_tickers": ["NVDA", "MSFT"],
+            "query": "AI",
+            "max_articles": 2,
+            "use_market_data": False,
+            "run_ml_calibration": True
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["custom_portfolio"] is True
+    assert data["news_adjusted"] is True
+    assert "live_news" in data
+    assert "result" in data
+    assert data["result"]["portfolio_name"] == "Custom Test Portfolio"

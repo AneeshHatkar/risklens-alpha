@@ -14,7 +14,7 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
-import { getMlEvaluation, runLiveNewsSimulation, runNewsAwareSimulation } from "./lib/api";
+import { getMlEvaluation, runCustomLiveNewsSimulation, runLiveNewsSimulation, runNewsAwareSimulation } from "./lib/api";
 import "./styles.css";
 
 type Page =
@@ -49,6 +49,8 @@ function App() {
     use_market_data: true,
     run_ml_calibration: true,
   });
+  const [customPortfolioName, setCustomPortfolioName] = useState("My Live AI Portfolio");
+  const [customPortfolioText, setCustomPortfolioText] = useState("NVDA 40\nMSFT 30\nAAPL 20\nSPY 10");
 
   async function loadData() {
     setLoading(true);
@@ -73,6 +75,59 @@ function App() {
     }
   }
 
+
+
+  function parseCustomPortfolioInput() {
+    return customPortfolioText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [ticker, value] = line.split(/[,:\s]+/);
+        return {
+          ticker: ticker.toUpperCase(),
+          weight: Number(value),
+        };
+      })
+      .filter((item) => item.ticker && Number.isFinite(item.weight) && item.weight > 0);
+  }
+
+  async function runCustomPortfolioSimulationFromForm() {
+    setLoading(true);
+    setError("");
+
+    try {
+      const holdings = parseCustomPortfolioInput();
+
+      if (holdings.length === 0) {
+        throw new Error("Enter at least one holding like: NVDA 40");
+      }
+
+      const simData = await runCustomLiveNewsSimulation({
+        portfolio_name: customPortfolioName,
+        holdings,
+        scenario_id: liveForm.scenario_id,
+        news_tickers: liveForm.tickers
+          .split(",")
+          .map((item) => item.trim().toUpperCase())
+          .filter(Boolean),
+        query: liveForm.query,
+        max_articles: Number(liveForm.max_articles),
+        use_market_data: liveForm.use_market_data,
+        run_ml_calibration: liveForm.run_ml_calibration,
+      });
+
+      setSimulation(simData);
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.detail ||
+          err?.message ||
+          "Could not run custom portfolio simulation."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function runLiveSimulationFromForm() {
     setLoading(true);
@@ -210,6 +265,11 @@ function App() {
             liveForm={liveForm}
             setLiveForm={setLiveForm}
             runLiveSimulationFromForm={runLiveSimulationFromForm}
+            runCustomPortfolioSimulationFromForm={runCustomPortfolioSimulationFromForm}
+            customPortfolioName={customPortfolioName}
+            setCustomPortfolioName={setCustomPortfolioName}
+            customPortfolioText={customPortfolioText}
+            setCustomPortfolioText={setCustomPortfolioText}
             loading={loading}
           />
         )}
@@ -307,6 +367,11 @@ function SimulationPage({
   liveForm,
   setLiveForm,
   runLiveSimulationFromForm,
+  runCustomPortfolioSimulationFromForm,
+  customPortfolioName,
+  setCustomPortfolioName,
+  customPortfolioText,
+  setCustomPortfolioText,
   loading,
 }: any) {
   return (
@@ -319,9 +384,45 @@ function SimulationPage({
         </div>
       </div>
 
+      <div className="custom-builder">
+        <div>
+          <h3>Custom Portfolio Builder</h3>
+          <p className="summary">
+            Enter one holding per line using ticker and weight. Example: NVDA 40
+          </p>
+        </div>
+
+        <label>
+          Portfolio name
+          <input
+            value={customPortfolioName}
+            onChange={(event) => setCustomPortfolioName(event.target.value)}
+          />
+        </label>
+
+        <label className="textarea-label">
+          Holdings
+          <textarea
+            value={customPortfolioText}
+            onChange={(event) => setCustomPortfolioText(event.target.value)}
+            rows={5}
+            placeholder={"NVDA 40\nMSFT 30\nSPY 30"}
+          />
+        </label>
+
+        <button
+          className="primary-button run-button"
+          onClick={runCustomPortfolioSimulationFromForm}
+          disabled={loading}
+        >
+          {loading ? <Loader2 className="spin" size={18} /> : <Zap size={18} />}
+          Run Custom Portfolio Live Simulation
+        </button>
+      </div>
+
       <div className="input-panel">
         <label>
-          Portfolio
+          Saved Portfolio
           <select
             value={liveForm.portfolio_id}
             onChange={(event) =>

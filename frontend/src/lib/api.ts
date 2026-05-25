@@ -51,3 +51,18 @@ export async function runLiveNewsSimulation(input: {
   const response = await api.post("/simulate-with-live-news", input);
   return response.data;
 }
+
+
+export async function runCustomLiveNewsSimulation(input: {
+  portfolio_name: string;
+  holdings: { ticker: string; weight?: number; shares?: number }[];
+  scenario_id: string;
+  news_tickers: string[];
+  query?: string;
+  max_articles: number;
+  use_market_data: boolean;
+  run_ml_calibration: boolean;
+}) {
+  const response = await api.post("/simulate-custom-live-news", input);
+  return response.data;
+}

@@ -290,3 +290,32 @@ def test_database_simulation_creates_timeline_point():
     assert timeline[0]["scenario_id"] == "ai_capex_slowdown"
 
     clear_overrides()
+
+
+def test_timeline_anomalies_endpoint_returns_shape():
+    client = make_test_client()
+
+    create_response = client.post(
+        "/db/portfolios",
+        json={
+            "name": "Anomaly API Portfolio",
+            "owner_label": "test",
+            "holdings": [
+                {"ticker": "NVDA", "weight": 0.5},
+                {"ticker": "SPY", "weight": 0.5},
+            ],
+        },
+    )
+
+    portfolio_id = create_response.json()["id"]
+
+    response = client.get(f"/db/portfolios/{portfolio_id}/timeline/anomalies")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert "point_count" in data
+    assert "anomaly_count" in data
+    assert "anomalies" in data
+
+    clear_overrides()

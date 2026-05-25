@@ -85,6 +85,7 @@ from backend.app.services.agent_disagreement import calculate_agent_disagreement
 from backend.app.ml.risk_calibrator import load_risk_calibrator_metrics, predict_calibrated_risk_from_result
 from backend.app.services.news_aware_simulation import run_news_aware_simulation
 from backend.app.services.ml_evaluation import run_ml_evaluation_suite
+from backend.app.ml.risk_anomaly_detector import detect_risk_timeline_anomalies
 
 
 settings = get_settings()
@@ -821,3 +822,28 @@ def simulate_with_news(request: NewsAwareSimulationRequest) -> dict:
 @app.get("/ml/evaluate")
 def evaluate_ml_system() -> dict:
     return run_ml_evaluation_suite()
+
+
+
+@app.get("/db/portfolios/{portfolio_id}/timeline/anomalies")
+def get_portfolio_timeline_anomalies(
+    portfolio_id: int,
+    scenario_id: str | None = None,
+    limit: int = 200,
+    db: Session = Depends(get_db),
+) -> dict:
+    portfolio = get_portfolio_by_id(db, portfolio_id)
+
+    if portfolio is None:
+        raise HTTPException(status_code=404, detail="Portfolio not found.")
+
+    points = list_timeline_points(
+        db=db,
+        portfolio_id=portfolio_id,
+        scenario_id=scenario_id,
+        limit=limit,
+    )
+
+    point_dicts = [timeline_point_to_dict(point) for point in points]
+
+    return detect_risk_timeline_anomalies(point_dicts)

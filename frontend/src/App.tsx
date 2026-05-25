@@ -14,7 +14,7 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
-import { getMlEvaluation, runNewsAwareSimulation } from "./lib/api";
+import { getMlEvaluation, runCustomLiveNewsSimulation, runLiveNewsSimulation, runNewsAwareSimulation } from "./lib/api";
 import "./styles.css";
 
 type Page =
@@ -40,6 +40,17 @@ function App() {
   const [simulation, setSimulation] = useState<any>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [liveForm, setLiveForm] = useState({
+    portfolio_id: "ai_growth_sample",
+    scenario_id: "ai_capex_slowdown",
+    tickers: "NVDA, MSFT, AAPL, SPY",
+    query: "AI",
+    max_articles: 5,
+    use_market_data: true,
+    run_ml_calibration: true,
+  });
+  const [customPortfolioName, setCustomPortfolioName] = useState("My Live AI Portfolio");
+  const [customPortfolioText, setCustomPortfolioText] = useState("NVDA 40\nMSFT 30\nAAPL 20\nSPY 10");
 
   async function loadData() {
     setLoading(true);
@@ -58,6 +69,90 @@ function App() {
         err?.response?.data?.detail ||
           err?.message ||
           "Could not connect to backend."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
+
+  function parseCustomPortfolioInput() {
+    return customPortfolioText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [ticker, value] = line.split(/[,:\s]+/);
+        return {
+          ticker: ticker.toUpperCase(),
+          weight: Number(value),
+        };
+      })
+      .filter((item) => item.ticker && Number.isFinite(item.weight) && item.weight > 0);
+  }
+
+  async function runCustomPortfolioSimulationFromForm() {
+    setLoading(true);
+    setError("");
+
+    try {
+      const holdings = parseCustomPortfolioInput();
+
+      if (holdings.length === 0) {
+        throw new Error("Enter at least one holding like: NVDA 40");
+      }
+
+      const simData = await runCustomLiveNewsSimulation({
+        portfolio_name: customPortfolioName,
+        holdings,
+        scenario_id: liveForm.scenario_id,
+        news_tickers: liveForm.tickers
+          .split(",")
+          .map((item) => item.trim().toUpperCase())
+          .filter(Boolean),
+        query: liveForm.query,
+        max_articles: Number(liveForm.max_articles),
+        use_market_data: liveForm.use_market_data,
+        run_ml_calibration: liveForm.run_ml_calibration,
+      });
+
+      setSimulation(simData);
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.detail ||
+          err?.message ||
+          "Could not run custom portfolio simulation."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function runLiveSimulationFromForm() {
+    setLoading(true);
+    setError("");
+
+    try {
+      const simData = await runLiveNewsSimulation({
+        portfolio_id: liveForm.portfolio_id,
+        scenario_id: liveForm.scenario_id,
+        tickers: liveForm.tickers
+          .split(",")
+          .map((item) => item.trim().toUpperCase())
+          .filter(Boolean),
+        query: liveForm.query,
+        max_articles: Number(liveForm.max_articles),
+        use_market_data: liveForm.use_market_data,
+        run_ml_calibration: liveForm.run_ml_calibration,
+      });
+
+      setSimulation(simData);
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.detail ||
+          err?.message ||
+          "Could not run live news simulation."
       );
     } finally {
       setLoading(false);
@@ -164,7 +259,20 @@ function App() {
 
         {page === "ml" && <MlEvaluationPage mlEvaluation={mlEvaluation} />}
 
-        {page === "simulation" && <SimulationPage simulation={simulation} />}
+        {page === "simulation" && (
+          <SimulationPage
+            simulation={simulation}
+            liveForm={liveForm}
+            setLiveForm={setLiveForm}
+            runLiveSimulationFromForm={runLiveSimulationFromForm}
+            runCustomPortfolioSimulationFromForm={runCustomPortfolioSimulationFromForm}
+            customPortfolioName={customPortfolioName}
+            setCustomPortfolioName={setCustomPortfolioName}
+            customPortfolioText={customPortfolioText}
+            setCustomPortfolioText={setCustomPortfolioText}
+            loading={loading}
+          />
+        )}
 
         {page === "factors" && (
           <DynamicFactorsPage simulation={simulation} changedFactors={changedFactors} />
@@ -254,23 +362,181 @@ function MlEvaluationPage({ mlEvaluation }: any) {
   );
 }
 
-function SimulationPage({ simulation }: any) {
+function SimulationPage({
+  simulation,
+  liveForm,
+  setLiveForm,
+  runLiveSimulationFromForm,
+  runCustomPortfolioSimulationFromForm,
+  customPortfolioName,
+  setCustomPortfolioName,
+  customPortfolioText,
+  setCustomPortfolioText,
+  loading,
+}: any) {
   return (
     <section className="page-card">
       <div className="page-header">
         <Newspaper size={24} />
         <div>
-          <h2>News-Aware Simulation</h2>
-          <p>Runs portfolio risk using dynamic news narrative adjustments.</p>
+          <h2>Live News-Aware Simulation</h2>
+          <p>Enter tickers/news query and run a live market/news-driven risk simulation.</p>
         </div>
       </div>
 
+      <div className="custom-builder">
+        <div>
+          <h3>Custom Portfolio Builder</h3>
+          <p className="summary">
+            Enter one holding per line using ticker and weight. Example: NVDA 40
+          </p>
+        </div>
+
+        <label>
+          Portfolio name
+          <input
+            value={customPortfolioName}
+            onChange={(event) => setCustomPortfolioName(event.target.value)}
+          />
+        </label>
+
+        <label className="textarea-label">
+          Holdings
+          <textarea
+            value={customPortfolioText}
+            onChange={(event) => setCustomPortfolioText(event.target.value)}
+            rows={5}
+            placeholder={"NVDA 40\nMSFT 30\nSPY 30"}
+          />
+        </label>
+
+        <button
+          className="primary-button run-button"
+          onClick={runCustomPortfolioSimulationFromForm}
+          disabled={loading}
+        >
+          {loading ? <Loader2 className="spin" size={18} /> : <Zap size={18} />}
+          Run Custom Portfolio Live Simulation
+        </button>
+      </div>
+
+      <div className="input-panel">
+        <label>
+          Saved Portfolio
+          <select
+            value={liveForm.portfolio_id}
+            onChange={(event) =>
+              setLiveForm({ ...liveForm, portfolio_id: event.target.value })
+            }
+          >
+            <option value="ai_growth_sample">AI Growth Sample</option>
+            <option value="balanced_tech_sample">Balanced Tech Sample</option>
+            <option value="semiconductor_sample">Semiconductor Sample</option>
+          </select>
+        </label>
+
+        <label>
+          Scenario
+          <select
+            value={liveForm.scenario_id}
+            onChange={(event) =>
+              setLiveForm({ ...liveForm, scenario_id: event.target.value })
+            }
+          >
+            <option value="ai_capex_slowdown">AI Capex Slowdown</option>
+            <option value="higher_for_longer_rates">Higher-for-Longer Rates</option>
+            <option value="cloud_growth_deceleration">Cloud Growth Deceleration</option>
+            <option value="semiconductor_export_restriction">Semiconductor Export Restriction</option>
+            <option value="consumer_demand_weakness">Consumer Demand Weakness</option>
+          </select>
+        </label>
+
+        <label>
+          Tickers
+          <input
+            value={liveForm.tickers}
+            onChange={(event) =>
+              setLiveForm({ ...liveForm, tickers: event.target.value })
+            }
+            placeholder="NVDA, MSFT, AAPL, SPY"
+          />
+        </label>
+
+        <label>
+          News query
+          <input
+            value={liveForm.query}
+            onChange={(event) =>
+              setLiveForm({ ...liveForm, query: event.target.value })
+            }
+            placeholder="AI, rates, chips, cloud..."
+          />
+        </label>
+
+        <label>
+          Max articles
+          <input
+            type="number"
+            min="1"
+            max="20"
+            value={liveForm.max_articles}
+            onChange={(event) =>
+              setLiveForm({ ...liveForm, max_articles: Number(event.target.value) })
+            }
+          />
+        </label>
+
+        <div className="toggle-row">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={liveForm.use_market_data}
+              onChange={(event) =>
+                setLiveForm({ ...liveForm, use_market_data: event.target.checked })
+              }
+            />
+            Use live market data
+          </label>
+
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={liveForm.run_ml_calibration}
+              onChange={(event) =>
+                setLiveForm({ ...liveForm, run_ml_calibration: event.target.checked })
+              }
+            />
+            Run ML calibration
+          </label>
+        </div>
+
+        <button className="primary-button run-button" onClick={runLiveSimulationFromForm} disabled={loading}>
+          {loading ? <Loader2 className="spin" size={18} /> : <Zap size={18} />}
+          Run Live Simulation
+        </button>
+      </div>
+
       <section className="grid metrics">
-        <Metric title="Portfolio" value={simulation?.result?.portfolio_name ?? "--"} subtitle="sample portfolio" />
+        <Metric title="Portfolio" value={simulation?.result?.portfolio_name ?? "--"} subtitle="selected portfolio" />
         <Metric title="Risk score" value={`${simulation?.result?.vulnerability_score ?? "--"}/100`} subtitle={simulation?.result?.risk_level ?? "loading"} />
         <Metric title="Calibrated score" value={`${simulation?.ml_calibration?.calibrated_score ?? "--"}/100`} subtitle={simulation?.ml_calibration?.calibrated_level ?? "loading"} />
-        <Metric title="Severe probability" value={simulation?.ml_calibration?.severe_probability ?? "--"} subtitle="ML model estimate" />
+        <Metric title="Live articles" value={simulation?.live_news?.article_count ?? simulation?.dynamic_factor_update?.narrative_count ?? "--"} subtitle={simulation?.live_news?.source ?? "news narratives"} />
       </section>
+
+      {simulation?.live_news?.articles && (
+        <div className="panel wide">
+          <h3>Live News Used</h3>
+          <div className="news-list">
+            {simulation.live_news.articles.slice(0, 5).map((article: any, index: number) => (
+              <div className="news-item" key={`${article.title}-${index}`}>
+                <strong>{article.title}</strong>
+                <p>{article.summary}</p>
+                <span>{article.source}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="panel wide">
         <h3>Simulation Summary</h3>

@@ -5,7 +5,7 @@ export const API_BASE_URL =
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 45000,
 });
 
 export async function getMlEvaluation() {
@@ -36,5 +36,33 @@ export async function runNewsAwareSimulation() {
     ],
   });
 
+  return response.data;
+}
+
+export async function runLiveNewsSimulation(input: {
+  portfolio_id: string;
+  scenario_id: string;
+  tickers: string[];
+  query?: string;
+  max_articles: number;
+  use_market_data: boolean;
+  run_ml_calibration: boolean;
+}) {
+  const response = await api.post("/simulate-with-live-news", input);
+  return response.data;
+}
+
+
+export async function runCustomLiveNewsSimulation(input: {
+  portfolio_name: string;
+  holdings: { ticker: string; weight?: number; shares?: number }[];
+  scenario_id: string;
+  news_tickers: string[];
+  query?: string;
+  max_articles: number;
+  use_market_data: boolean;
+  run_ml_calibration: boolean;
+}) {
+  const response = await api.post("/simulate-custom-live-news", input);
   return response.data;
 }
